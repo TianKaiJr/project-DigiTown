@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/constants.dart';
@@ -5,6 +6,7 @@ import 'package:super_admin_panel/controllers/menu_app_controller.dart';
 import 'package:super_admin_panel/responsive.dart';
 import 'package:super_admin_panel/screens/hospital/screens/appointment_screen.dart';
 import 'package:super_admin_panel/screens/hospital/screens/attendence_screen.dart';
+import 'package:super_admin_panel/screens/hospital/screens/calender_screen.dart';
 
 class HospitalScreen extends StatefulWidget {
   const HospitalScreen({super.key});
@@ -14,7 +16,7 @@ class HospitalScreen extends StatefulWidget {
 }
 
 class _HospitalScreenState extends State<HospitalScreen> {
-  String selectedOption = ''; // Track selected option
+  String selectedOption = '';
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +39,22 @@ class _HospitalScreenState extends State<HospitalScreen> {
                       runSpacing: 20,
                       children: [
                         OptionBox(
-                          title: "Attendance",
+                          title: "Live Attendance",
                           icon: Icons.event_available,
                           onTap: () => setState(() {
                             selectedOption = 'attendance';
                           }),
                         ),
                         OptionBox(
+                          title: "DA Calendar",
+                          icon: Icons.calendar_month,
+                          onTap: () => setState(() {
+                            selectedOption = 'calendar';
+                          }),
+                        ),
+                        OptionBox(
                           title: "Appointments",
-                          icon: Icons.calendar_today,
+                          icon: CupertinoIcons.time,
                           onTap: () => setState(() {
                             selectedOption = 'appointments';
                           }),
@@ -84,9 +93,7 @@ class _HospitalScreenState extends State<HospitalScreen> {
                               style: TextStyle(fontSize: 18),
                             ),
                           )
-                        : selectedOption == 'attendance'
-                            ? const AttendanceScreen()
-                            : const AppointmentsScreen(),
+                        : _getScreen(selectedOption),
                   ),
                 ),
               ),
@@ -95,6 +102,25 @@ class _HospitalScreenState extends State<HospitalScreen> {
         ),
       ),
     );
+  }
+
+  // Helper method to return the correct screen based on the selected option
+  Widget _getScreen(String option) {
+    switch (option) {
+      case 'attendance':
+        return const AttendanceScreen();
+      case 'appointments':
+        return const AppointmentsScreen();
+      case 'calendar':
+        return CalendarScreen();
+      default:
+        return const Center(
+          child: Text(
+            'Invalid option selected',
+            style: TextStyle(fontSize: 18, color: Colors.red),
+          ),
+        );
+    }
   }
 }
 
@@ -153,12 +179,17 @@ class _OptionBoxState extends State<OptionBox> {
                 color: Colors.white,
               ),
               const SizedBox(height: 10),
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.all(1.0),
+                child: Text(
+                  widget.title,
+                  textAlign: TextAlign
+                      .center, // Ensures text is centered for multiple lines
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
