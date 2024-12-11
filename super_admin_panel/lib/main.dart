@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/constants.dart';
 import 'package:super_admin_panel/controllers/menu_app_controller.dart';
+import 'package:super_admin_panel/screens/dashboard/dashboard_screen.dart';
+import 'package:super_admin_panel/screens/hospital/hospital_screen.dart';
 import 'package:super_admin_panel/screens/main/main_screen.dart';
 
 void main() {
@@ -30,8 +32,18 @@ class MyApp extends StatelessWidget {
             create: (context) => MenuAppController(),
           ),
         ],
-        child: MainScreen(),
+        child: const MainScreen(),
       ),
+      routes: {
+        'dashboard': (context) => const DashboardScreen(),
+        // 'panchayat': (context) => const PanchayatScreen(),
+        'hospital': (context) => const HospitalScreen(),
+        // 'bloodBank': (context) => const BloodBankScreen(),
+        // 'transport': (context) => const TransportScreen(),
+        // 'notification': (context) => const NotificationScreen(),
+        // 'profile': (context) => const ProfileScreen(),
+        // 'settings': (context) => const SettingsScreen(),
+      },
     );
   }
 }
