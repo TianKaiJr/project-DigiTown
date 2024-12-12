@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:main_app/components/drawer.dart';
+import 'package:main_app/profile_page.dart';
 import 'hospital.dart'; // Import the Hospital page
 import 'panchayat.dart'; // Import the Panchayat page
 import 'palliative_care.dart'; // Import the Palliative Care page
@@ -6,12 +8,40 @@ import 'transportation.dart'; // Import the Transportation page
 import 'blood.dart'; // Import the Blood page
 
 class HomePage extends StatelessWidget {
+  // Function for navigating to Profile Page
+  void goToProfilePage(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfilePage()),
+    );
+  }
+
+  // Function for handling Sign Out
+  void signOut(BuildContext context) {
+    // Handle sign out logic here, then pop the context to go back
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home Page"),
         backgroundColor: Colors.teal,
+        automaticallyImplyLeading: false, // Remove default back button
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Go back on press
+          },
+        ),
+        actions: [
+          // Removed profile button from here as per your request
+        ],
+      ),
+      endDrawer: MyDrawer(
+        onProfileTap: () => goToProfilePage(context),
+        onSignOut: () => signOut(context),
       ),
       body: Stack(
         children: [
@@ -42,7 +72,8 @@ class HomePage extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => HospitalPage()),
+                          MaterialPageRoute(
+                              builder: (context) => HospitalPage()),
                         );
                       },
                       child: _buildOptionBox(
@@ -51,13 +82,13 @@ class HomePage extends StatelessWidget {
                         label: "Hospital",
                       ),
                     ),
-
                     // Panchayat Box
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => PanchayatPage()),
+                          MaterialPageRoute(
+                              builder: (context) => PanchayatPage()),
                         );
                       },
                       child: _buildOptionBox(
@@ -69,7 +100,6 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 20),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -78,7 +108,8 @@ class HomePage extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => PalliativeCarePage()),
+                          MaterialPageRoute(
+                              builder: (context) => PalliativeCarePage()),
                         );
                       },
                       child: _buildOptionBox(
@@ -87,13 +118,13 @@ class HomePage extends StatelessWidget {
                         label: "Palliative Care",
                       ),
                     ),
-
                     // Transportation Box
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => TransportationPage()),
+                          MaterialPageRoute(
+                              builder: (context) => TransportationPage()),
                         );
                       },
                       child: _buildOptionBox(
@@ -105,7 +136,6 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 20),
-
                 // Blood Box
                 GestureDetector(
                   onTap: () {
@@ -128,7 +158,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildOptionBox({required Color color, required IconData icon, required String label}) {
+  Widget _buildOptionBox(
+      {required Color color, required IconData icon, required String label}) {
     return Container(
       width: 150,
       height: 150,
