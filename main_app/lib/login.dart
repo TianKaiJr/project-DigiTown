@@ -7,6 +7,8 @@ class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  LoginPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +16,7 @@ class LoginPage extends StatelessWidget {
         children: [
           // Background gradient
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Colors.blue, Colors.purple],
                 begin: Alignment.topCenter,
@@ -48,20 +50,20 @@ class LoginPage extends StatelessWidget {
                               color: Colors.purple.shade700,
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // Email input
                           TextFormField(
                             controller: emailController,
                             decoration: InputDecoration(
                               labelText: 'Email',
-                              labelStyle: TextStyle(color: Colors.purple),
+                              labelStyle: const TextStyle(color: Colors.purple),
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: Icon(Icons.email, color: Colors.purple),
+                              prefixIcon: const Icon(Icons.email, color: Colors.purple),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
@@ -74,20 +76,20 @@ class LoginPage extends StatelessWidget {
                               return null;
                             },
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           // Password input
                           TextFormField(
                             controller: passwordController,
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: TextStyle(color: Colors.purple),
+                              labelStyle: const TextStyle(color: Colors.purple),
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: Icon(Icons.lock, color: Colors.purple),
+                              prefixIcon: const Icon(Icons.lock, color: Colors.purple),
                             ),
                             obscureText: true,
                             validator: (value) {
@@ -100,7 +102,7 @@ class LoginPage extends StatelessWidget {
                               return null;
                             },
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           // Sign-in button
                           ElevatedButton(
                             onPressed: () {
@@ -117,22 +119,22 @@ class LoginPage extends StatelessWidget {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                minimumSize: Size(double.infinity, 50),
+                                minimumSize: const Size(double.infinity, 50),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'SIGN IN',
                                 style: TextStyle(fontSize: 18, color: Colors.white),
                               ),
                           ),
                           
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           // Forgot Password button
                           TextButton(
                             onPressed: () {
                             
                               
                             },
-                            child: Text(
+                            child: const Text(
                               'Forgot Password?',
                               style: TextStyle(color: Colors.purple),
                             ),

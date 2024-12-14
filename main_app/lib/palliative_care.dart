@@ -61,7 +61,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Booking Submitted Successfully!')),
+        const SnackBar(content: Text('Booking Submitted Successfully!')),
       );
     }
   }
@@ -73,7 +73,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
         children: [
           // Background Gradient
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFFFDEE9), Color(0xFFB5FFFC)],
                 begin: Alignment.topCenter,
@@ -88,12 +88,12 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                 AppBar(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
-                  title: Text(
+                  title: const Text(
                     'Book a Service',
                     style: TextStyle(color: Colors.teal),
                   ),
                   centerTitle: true,
-                  iconTheme: IconThemeData(color: Colors.teal),
+                  iconTheme: const IconThemeData(color: Colors.teal),
                 ),
                 Expanded(
                   child: Padding(
@@ -107,7 +107,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                             // Patient Name
                             TextFormField(
                               controller: _nameController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Patient Name',
                                 border: OutlineInputBorder(),
                               ),
@@ -118,12 +118,12 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
                             // Address
                             TextFormField(
                               controller: _addressController,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Address',
                                 border: OutlineInputBorder(),
                               ),
@@ -134,13 +134,13 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
                             // Pincode
                             TextFormField(
                               controller: _pincodeController,
                               keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Pincode',
                                 border: OutlineInputBorder(),
                               ),
@@ -154,11 +154,11 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
                             // Service Selection
                             DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'What service do you opt?',
                                 border: OutlineInputBorder(),
                               ),
@@ -173,7 +173,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                   value: service,
                                   child: Text(
                                     service,
-                                    style: TextStyle(fontWeight: FontWeight.normal),
+                                    style: const TextStyle(fontWeight: FontWeight.normal),
                                   ),
                                 );
                               }).toList(),
@@ -184,7 +184,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 return null;
                               },
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
                             // Date Selection
                             Row(
@@ -201,7 +201,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
                             // Time Selection
                             Row(
@@ -218,7 +218,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
                             // Submit Button with Gradient
                             GestureDetector(
@@ -227,7 +227,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 width: double.infinity,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
+                                  gradient: const LinearGradient(
                                     colors: [
                                       Color(0xFFFA8BFF),
                                       Color(0xFF2BD2FF),
@@ -238,7 +238,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Center(
+                                child: const Center(
                                   child: Text(
                                     'Submit',
                                     style: TextStyle(
