@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:main_app/booking_appoinment.dart';
 import 'package:main_app/profile_page.dart';
 import 'login.dart';
 
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         'x': (context) => const ProfilePage(),
+        'y':(context) => const BookingAppoinment(),
         
       },
       title: 'Login',
