@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/constants.dart';
-import 'package:super_admin_panel/controllers/menu_app_controller.dart';
-import 'package:super_admin_panel/screens/dashboard/dashboard_screen.dart';
-import 'package:super_admin_panel/screens/hospital/hospital_screen.dart';
-import 'package:super_admin_panel/screens/main/main_screen.dart';
+import 'package:super_admin_panel/Core/Theme/app_theme.dart';
+import 'package:super_admin_panel/_Hospital_Module/repositories/hospital_repository.dart';
+import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
+import 'package:super_admin_panel/_MainScreen_Module/repositories/screen_repository.dart';
+import 'package:super_admin_panel/_MainScreen_Module/view_models/main_screen_view_model.dart';
+import 'package:super_admin_panel/_MainScreen_Module/view_models/side_menu_view_model.dart';
+import 'package:super_admin_panel/_MainScreen_Module/views/main_screen.dart';
+import 'package:super_admin_panel/_Panchayat_Module/view_models/contact_view_model.dart';
+import 'package:super_admin_panel/_Panchayat_Module/view_models/panchayat_view_model.dart';
+import 'package:super_admin_panel/ZTemporary/screens/dashboard/dashboard_screen.dart';
+import 'package:super_admin_panel/ZTemporary/screens/hospital/hospital_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:super_admin_panel/ZTempModule/temp.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -20,35 +26,38 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // Create ScreenRepository instance here
+    final screenRepository = ScreenRepository();
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Admin Panel',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: bgColor,
-        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme)
-            .apply(bodyColor: Colors.white),
-        canvasColor: secondaryColor,
-      ),
+      theme: AppTheme.darkThemeMode,
       home: MultiProvider(
         providers: [
+          // Pass ScreenRepository instance to SideMenuViewModel
           ChangeNotifierProvider(
-            create: (context) => MenuAppController(),
-          ),
+              create: (_) => SideMenuViewModel(screenRepository)),
+          ChangeNotifierProvider(
+              create: (_) => MainScreenViewModel(screenRepository)),
+          ChangeNotifierProvider(create: (_) => PanchayatViewModel()),
+          ChangeNotifierProvider(create: (_) => ContactViewModel()),
+          ChangeNotifierProvider(
+              create: (_) => HospitalViewModel(HospitalRepository())),
         ],
         child: const MainScreen(),
       ),
       routes: {
         'dashboard': (context) => const DashboardScreen(),
-        // 'panchayat': (context) => const PanchayatScreen(),
+        'panchayat': (context) => const TempPage(),
         'hospital': (context) => const HospitalScreen(),
-        // 'bloodBank': (context) => const BloodBankScreen(),
-        // 'transport': (context) => const TransportScreen(),
-        // 'notification': (context) => const NotificationScreen(),
-        // 'profile': (context) => const ProfileScreen(),
-        // 'settings': (context) => const SettingsScreen(),
+        'bloodBank': (context) => const TempPage(),
+        'transport': (context) => const TempPage(),
+        'notification': (context) => const TempPage(),
+        'profile': (context) => const TempPage(),
+        'settings': (context) => const TempPage(),
       },
     );
   }
