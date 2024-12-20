@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/attendence_screen.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
+import 'package:super_admin_panel/_Hospital_Module/views/live_attendance_screen.dart';
 import 'package:super_admin_panel/_Hospital_Module/widgets/hospital_header.dart';
 import 'package:super_admin_panel/_Hospital_Module/widgets/option_box.dart';
 import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/appointment_screen.dart';
-import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/attendence_screen.dart';
+
 import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/calender_screen.dart';
 
 class HospitalScreen extends StatelessWidget {
@@ -26,7 +28,7 @@ class HospitalScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const HospitalHeader(),
+                    const HospitalHeader(name: "Hospital"),
                     const SizedBox(height: 20),
                     Wrap(
                       spacing: 20,
@@ -46,30 +48,27 @@ class HospitalScreen extends StatelessWidget {
 
             // Right side: Preview content based on selected option
             Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.all(
+                    16.0), // Add margin around the container
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.4), // Border color
+                    width: 1.5, // Border width
                   ),
-                  child: viewModel.selectedOption.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Please select an option to view details',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        )
-                      : _getScreen(viewModel.selectedOption),
+                  borderRadius: BorderRadius.circular(
+                      12.0), // Rounded corners for the container
                 ),
+                child: viewModel.selectedOption.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Please select an option to view details',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      )
+                    : _getScreen(viewModel.selectedOption),
               ),
             ),
           ],

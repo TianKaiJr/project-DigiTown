@@ -4,7 +4,8 @@ import 'package:super_admin_panel/ZTemporary/controllers/menu_app_controller.dar
 import 'package:super_admin_panel/ZTemporary/responsive.dart';
 
 class HospitalHeader extends StatelessWidget {
-  const HospitalHeader({super.key});
+  final String name;
+  const HospitalHeader({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +17,13 @@ class HospitalHeader extends StatelessWidget {
             onPressed: context.read<MenuAppController>().controlMenu,
           ),
         if (!Responsive.isMobile(context))
-          Text(
-            "Hospital",
-            style: Theme.of(context).textTheme.titleLarge,
+          Center(
+            child: Text(
+              name,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
           ),
         if (!Responsive.isMobile(context))
           Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),

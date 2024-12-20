@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/Core/Theme/app_theme.dart';
 import 'package:super_admin_panel/_Hospital_Module/repositories/hospital_repository.dart';
+import 'package:super_admin_panel/_Hospital_Module/view_models/doctor_attendence_view_model.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
 import 'package:super_admin_panel/_MainScreen_Module/repositories/screen_repository.dart';
 import 'package:super_admin_panel/_MainScreen_Module/view_models/main_screen_view_model.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => ContactViewModel()),
           ChangeNotifierProvider(
               create: (_) => HospitalViewModel(HospitalRepository())),
+          ChangeNotifierProvider(create: (_) => DoctorAttendenceViewModel())
         ],
         child: const MainScreen(),
       ),

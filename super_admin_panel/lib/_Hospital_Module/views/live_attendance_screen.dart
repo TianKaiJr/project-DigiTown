@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/doctor_attendence_view_model.dart';
 import 'package:super_admin_panel/_Hospital_Module/widgets/doctor_attendence_dialog.dart';
+import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 
-class AttendanceScreen extends StatelessWidget {
+class LiveAttendanceScreen extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _designationController = TextEditingController();
 
-  AttendanceScreen({super.key});
+  LiveAttendanceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<DoctorAttendenceViewModel>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Live Attendance"),
-        centerTitle: true,
+      appBar: CustomAppBar(
+        title:
+            "Live Attendance (${DateFormat('yMMMMd').format(DateTime.now())})",
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
