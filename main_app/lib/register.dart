@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home.dart';
-import 'register.dart';
 
-class LoginPage extends StatelessWidget {
+class RegisterPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  LoginPage({super.key});
 
   // Firebase Authentication instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Login function
-  void _loginUser(BuildContext context) async {
+  RegisterPage({super.key});
+
+  // Register function
+  void _registerUser(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        // Register the user using Firebase Authentication
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        // Navigate to HomePage on successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) =>  HomePage()),
+        // Optionally, you can set the user's display name (nameController)
+        await userCredential.user?.updateDisplayName(nameController.text.trim());
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account created successfully!')),
         );
+
+        // Navigate back to Login page after successful registration
+        Navigator.pop(context);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login Failed: ${e.toString()}")),
+          SnackBar(content: Text("Registration Failed: ${e.toString()}")),
         );
       }
     }
@@ -44,7 +49,7 @@ class LoginPage extends StatelessWidget {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue, Colors.purple],
+                colors: [Colors.orange, Colors.red],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -69,27 +74,49 @@ class LoginPage extends StatelessWidget {
                         children: [
                           // Title
                           Text(
-                            'Welcome Back!',
+                            'Create an Account',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              color: Colors.purple.shade700,
+                              color: Colors.red.shade700,
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Email input
+                          // Name input
                           TextFormField(
-                            controller: emailController,
+                            controller: nameController,
                             decoration: InputDecoration(
-                              labelText: 'Email',
-                              labelStyle: const TextStyle(color: Colors.purple),
+                              labelText: 'Name',
+                              labelStyle: const TextStyle(color: Colors.red),
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.email, color: Colors.purple),
+                              prefixIcon: const Icon(Icons.person, color: Colors.red),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          // Email input
+                          TextFormField(
+                            controller: emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Email',
+                              labelStyle: const TextStyle(color: Colors.red),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(Icons.email, color: Colors.red),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
@@ -108,14 +135,14 @@ class LoginPage extends StatelessWidget {
                             controller: passwordController,
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: const TextStyle(color: Colors.purple),
+                              labelStyle: const TextStyle(color: Colors.red),
                               filled: true,
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.lock, color: Colors.purple),
+                              prefixIcon: const Icon(Icons.lock, color: Colors.red),
                             ),
                             obscureText: true,
                             validator: (value) {
@@ -129,45 +156,30 @@ class LoginPage extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 24),
-                          // Sign-in button
+                          // Register button
                           ElevatedButton(
-                            onPressed: () => _loginUser(context),
+                            onPressed: () => _registerUser(context),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.purple,
+                              backgroundColor: Colors.red,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               minimumSize: const Size(double.infinity, 50),
                             ),
                             child: const Text(
-                              'SIGN IN',
+                              'REGISTER',
                               style: TextStyle(fontSize: 18, color: Colors.white),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // Forgot Password button
+                          // Back to Login button
                           TextButton(
                             onPressed: () {
-                              // Handle forgot password
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Forgot Password functionality not implemented")),
-                              );
+                              Navigator.pop(context);
                             },
                             child: const Text(
-                              'Forgot Password?',
-                              style: TextStyle(color: Colors.purple),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => RegisterPage()),
-                              );
-                            },
-                            child: const Text(
-                              'Don\'t have an account? Register',
-                              style: TextStyle(color: Colors.purple),
+                              'Already have an account? Login',
+                              style: TextStyle(color: Colors.red),
                             ),
                           ),
                         ],

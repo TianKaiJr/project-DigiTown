@@ -18,7 +18,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final ImagePicker _picker = ImagePicker();
 
   void _showEditDialog(String title, String currentValue, Function(String) onSave) {
-    TextEditingController _controller = TextEditingController(text: currentValue);
+    TextEditingController controller = TextEditingController(text: currentValue);
     String? errorText;
 
     showDialog(
@@ -29,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
             return AlertDialog(
               title: Text('Edit $title'),
               content: TextField(
-                controller: _controller,
+                controller: controller,
                 decoration: InputDecoration(
                   hintText: 'Enter $title',
                   errorText: errorText,
@@ -45,20 +45,20 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'),
+                  child: const Text('Cancel'),
                 ),
                 TextButton(
                   onPressed: () {
-                    if (_validateInput(title, _controller.text) == null) {
-                      onSave(_controller.text);
+                    if (_validateInput(title, controller.text) == null) {
+                      onSave(controller.text);
                       Navigator.of(context).pop();
                     } else {
                       setState(() {
-                        errorText = _validateInput(title, _controller.text);
+                        errorText = _validateInput(title, controller.text);
                       });
                     }
                   },
-                  child: Text('Save'),
+                  child: const Text('Save'),
                 ),
               ],
             );
@@ -87,12 +87,12 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Upload Photo'),
+          title: const Text('Upload Photo'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: Text('Take a Photo'),
+                title: const Text('Take a Photo'),
                 onTap: () async {
                   final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
                   if (photo != null) {
@@ -104,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
               ListTile(
-                title: Text('Choose from Gallery'),
+                title: const Text('Choose from Gallery'),
                 onTap: () async {
                   final XFile? galleryImage = await _picker.pickImage(source: ImageSource.gallery);
                   if (galleryImage != null) {
@@ -122,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
           ],
         );
@@ -134,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
+        title: const Center(
           child: Text(
             "Profile",
             style: TextStyle(
@@ -149,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
           color: Colors.white,
         ),
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -161,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -172,7 +172,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         child: ListView(
-          padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           children: [
             Center(
               child: Stack(
@@ -182,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     radius: 60,
                     backgroundColor: Colors.grey[300], // Light background color for the placeholder
                     child: _profileImage.isEmpty || _profileImage == 'https://via.placeholder.com/150'
-                        ? Icon(
+                        ? const Icon(
                             Icons.camera,
                             size: 40,
                             color: Color(0xFF8EC5FC), // Camera icon color
@@ -213,7 +213,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.black.withOpacity(0.6),
-                        child: Icon(
+                        child: const Icon(
                           Icons.camera_alt,
                           color:Color(0xFF8EC5FC),
                         ),
@@ -223,9 +223,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             Container(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(16.0),
@@ -269,20 +269,20 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
@@ -294,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Text(
                     currentValue.isEmpty ? 'No $label provided' : currentValue,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black,
                       fontSize: 16,
                     ),
@@ -302,7 +302,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.edit, color: Color(0xFF8EC5FC)),
+                icon: const Icon(Icons.edit, color: Color(0xFF8EC5FC)),
                 onPressed: () {
                   _showEditDialog(label, currentValue, onSave);
                 },

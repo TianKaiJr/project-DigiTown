@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:main_app/components/drawer.dart';
 import 'package:main_app/profile_page.dart';
-import 'hospital.dart'; // Import the Hospital page
-import 'panchayat.dart'; // Import the Panchayat page
-import 'palliative_care.dart'; // Import the Palliative Care page
-import 'transportation.dart'; // Import the Transportation page
-import 'blood.dart'; // Import the Blood page
+import 'hospital.dart';
+import 'panchayat.dart';
+import 'palliative_care.dart';
+import 'transportation.dart';
+import 'blood.dart';
 
 class HomePage extends StatelessWidget {
-  // Function for navigating to Profile Page
   void goToProfilePage(BuildContext context) {
     Navigator.pop(context);
     Navigator.push(
@@ -17,58 +17,78 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Function for handling Sign Out
-  void signOut(BuildContext context) {
-    // Handle sign out logic here, then pop the context to go back
-    Navigator.pop(context);
+  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+    bool? shouldExit = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Exit"),
+        content: const Text("Do you really want to exit?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldExit == true) {
+      SystemNavigator.pop();
+    }
+
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.teal,
-        automaticallyImplyLeading: false, // Remove default back button
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Go back on press
-          },
+    return WillPopScope(
+      onWillPop: () => _showExitConfirmationDialog(context),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.teal,
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              if (await _showExitConfirmationDialog(context)) {
+              }
+            },
+          ),
         ),
-        actions: [
-          // Removed profile button from here as per your request
-        ],
-      ),
-      endDrawer: MyDrawer(
-        onProfileTap: () => goToProfilePage(context),
-        onSignOut: () => signOut(context),
-      ),
-      body: Stack(
-        children: [
-          // Background Decoration
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.teal.shade100,
-                  Colors.teal.shade300,
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+        endDrawer: MyDrawer(
+          onProfileTap: () => goToProfilePage(context),
+          onSignOut: () {},
+        ),
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.teal.shade100,
+                    Colors.teal.shade300,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Wrap(
+                  spacing: 20,
+                  runSpacing: 20,
                   children: [
-                    // Hospital Box
-                    GestureDetector(
+                    _buildNeumorphicOptionBox(
+                      context,
+                      color: Colors.purple,
+                      icon: Icons.local_hospital,
+                      label: "Hospital",
                       onTap: () {
                         Navigator.push(
                           context,
@@ -76,14 +96,12 @@ class HomePage extends StatelessWidget {
                               builder: (context) => HospitalPage()),
                         );
                       },
-                      child: _buildOptionBox(
-                        color: Colors.purple,
-                        icon: Icons.local_hospital,
-                        label: "Hospital",
-                      ),
                     ),
-                    // Panchayat Box
-                    GestureDetector(
+                    _buildNeumorphicOptionBox(
+                      context,
+                      color: Colors.blue,
+                      icon: Icons.account_balance,
+                      label: "Panchayat",
                       onTap: () {
                         Navigator.push(
                           context,
@@ -91,20 +109,12 @@ class HomePage extends StatelessWidget {
                               builder: (context) => PanchayatPage()),
                         );
                       },
-                      child: _buildOptionBox(
-                        color: Colors.blue,
-                        icon: Icons.account_balance,
-                        label: "Panchayat",
-                      ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Palliative Care Box
-                    GestureDetector(
+                    _buildNeumorphicOptionBox(
+                      context,
+                      color: Colors.green,
+                      icon: Icons.healing,
+                      label: "Palliative Care",
                       onTap: () {
                         Navigator.push(
                           context,
@@ -112,14 +122,12 @@ class HomePage extends StatelessWidget {
                               builder: (context) => PalliativeCarePage()),
                         );
                       },
-                      child: _buildOptionBox(
-                        color: Colors.green,
-                        icon: Icons.healing,
-                        label: "Palliative Care",
-                      ),
                     ),
-                    // Transportation Box
-                    GestureDetector(
+                    _buildNeumorphicOptionBox(
+                      context,
+                      color: Colors.orange,
+                      icon: Icons.directions_bus,
+                      label: "Transportation",
                       onTap: () {
                         Navigator.push(
                           context,
@@ -127,71 +135,75 @@ class HomePage extends StatelessWidget {
                               builder: (context) => TransportationPage()),
                         );
                       },
-                      child: _buildOptionBox(
-                        color: Colors.orange,
-                        icon: Icons.directions_bus,
-                        label: "Transportation",
-                      ),
+                    ),
+                    _buildNeumorphicOptionBox(
+                      context,
+                      color: Colors.red,
+                      icon: Icons.bloodtype,
+                      label: "Blood",
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => BloodPage()),
+                        );
+                      },
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                // Blood Box
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => BloodPage()),
-                    );
-                  },
-                  child: _buildOptionBox(
-                    color: Colors.red,
-                    icon: Icons.bloodtype,
-                    label: "Blood",
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildOptionBox(
-      {required Color color, required IconData icon, required String label}) {
-    return Container(
-      width: 150,
-      height: 150,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: Offset(2, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 50,
-            color: Colors.white,
-          ),
-          SizedBox(height: 10),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+  Widget _buildNeumorphicOptionBox(
+      BuildContext context, {
+      required Color color,
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 150,
+        height: 150,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(5, 5),
             ),
-          ),
-        ],
+            BoxShadow(
+              color: Colors.white.withOpacity(0.7),
+              blurRadius: 10,
+              offset: Offset(-5, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 50,
+              color: Colors.white,
+            ),
+            SizedBox(height: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
