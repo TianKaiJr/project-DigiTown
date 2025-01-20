@@ -18,7 +18,7 @@ class MyListTile extends StatelessWidget {
           onTap: ontap,
           title: Text(
             text,
-            style: TextStyle(color: const Color.fromARGB(255, 13, 12, 12)),
+            style: const TextStyle(color: Color.fromARGB(255, 13, 12, 12)),
           ),
       ),
     );

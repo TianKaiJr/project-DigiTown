@@ -32,6 +32,8 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Check if the user is logged in by listening to Firebase auth state changes
@@ -40,7 +42,7 @@ class AuthWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         // While the connection is loading, show a loading indicator
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
         
         // If the user is authenticated, navigate to the profile page (or any other page)

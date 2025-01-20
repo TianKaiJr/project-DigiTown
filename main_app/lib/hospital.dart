@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launching URLs (e.g., calls, maps)
 
 class HospitalPage extends StatefulWidget {
+  const HospitalPage({super.key});
+
   @override
   _HospitalPageState createState() => _HospitalPageState();
 }
@@ -31,7 +33,7 @@ class _HospitalPageState extends State<HospitalPage> {
   ];
 
   List<Map<String, String>> filteredHospitals = [];
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   final List<String> healthTips = [
     'Drink plenty of water to stay hydrated.',
@@ -91,9 +93,9 @@ class _HospitalPageState extends State<HospitalPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Book Appointment'),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             TextField(
               decoration: InputDecoration(labelText: 'Name'),
             ),

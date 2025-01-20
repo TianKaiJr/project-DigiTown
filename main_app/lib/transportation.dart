@@ -8,7 +8,7 @@ class TransportationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Transportation'),
+        title: const Text('Transportation'),
         centerTitle: true,
         backgroundColor: Colors.blue, // Primary color
       ),
@@ -29,13 +29,13 @@ class TransportationPage extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 40), // Makes the button larger
+                      padding: const EdgeInsets.symmetric(vertical: 40), // Makes the button larger
                       backgroundColor: Colors.blue, // Button color
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20), // Rounded edges
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Taxi Service',
                       style: TextStyle(
                         fontSize: 20,
@@ -52,17 +52,17 @@ class TransportationPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => BusPage()),
+                        MaterialPageRoute(builder: (context) => const BusPage()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 40), // Makes the button larger
+                      padding: const EdgeInsets.symmetric(vertical: 40), // Makes the button larger
                       backgroundColor: Colors.blue, // Button color
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20), // Rounded edges
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Bus Service',
                       style: TextStyle(
                         fontSize: 20,
@@ -88,13 +88,15 @@ class TaxiPage extends StatelessWidget {
     Driver('Emily Davis', '+14447891234'),
   ];
 
+  TaxiPage({super.key});
+
   void _showPopupMenu(BuildContext context, String phoneNumber) {
     showMenu(
       context: context,
-      position: RelativeRect.fromLTRB(100, 100, 0, 0),
+      position: const RelativeRect.fromLTRB(100, 100, 0, 0),
       items: [
-        PopupMenuItem(value: 'message', child: Text('Message')),
-        PopupMenuItem(value: 'call', child: Text('Call')),
+        const PopupMenuItem(value: 'message', child: Text('Message')),
+        const PopupMenuItem(value: 'call', child: Text('Call')),
       ],
     ).then((value) {
       if (value == 'message') {
@@ -131,12 +133,12 @@ class TaxiPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Error'),
+        title: const Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -147,11 +149,11 @@ class TaxiPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Taxi Service'),
+        title: const Text('Taxi Service'),
         backgroundColor: Colors.blue,
       ),
       body: ListView.builder(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         itemCount: taxiDrivers.length,
         itemBuilder: (context, index) {
           final driver = taxiDrivers[index];
@@ -161,7 +163,7 @@ class TaxiPage extends StatelessWidget {
               title: Text('Name: ${driver.name}'),
               subtitle: Text('Phone: ${driver.phone}'),
               trailing: IconButton(
-                icon: Icon(Icons.more_vert),
+                icon: const Icon(Icons.more_vert),
                 onPressed: () => _showPopupMenu(context, driver.phone),
               ),
             ),

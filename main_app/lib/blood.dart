@@ -24,7 +24,7 @@ class BloodPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RegisterBloodDonation()),
+                  MaterialPageRoute(builder: (context) => const RegisterBloodDonation()),
                 );
               },
               child: const Text("Register to Donate Blood"),
@@ -34,7 +34,7 @@ class BloodPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RequestBlood()),
+                  MaterialPageRoute(builder: (context) => const RequestBlood()),
                 );
               },
               child: const Text("Request for Blood"),
@@ -264,7 +264,7 @@ class _RequestBloodState extends State<RequestBlood> {
             // Name input
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Name",
                 border: OutlineInputBorder(),
               ),
@@ -274,7 +274,7 @@ class _RequestBloodState extends State<RequestBlood> {
             // Blood group input
             TextField(
               controller: _bloodGroupController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Blood Group Required",
                 border: OutlineInputBorder(),
               ),
@@ -284,7 +284,7 @@ class _RequestBloodState extends State<RequestBlood> {
             // Urgency input
             TextField(
               controller: _urgencyController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Urgency (e.g., Immediate, Within a Day)",
                 border: OutlineInputBorder(),
               ),
@@ -294,7 +294,7 @@ class _RequestBloodState extends State<RequestBlood> {
             // Contact input
             TextField(
               controller: _contactController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Contact Number",
                 border: OutlineInputBorder(),
               ),
@@ -304,7 +304,7 @@ class _RequestBloodState extends State<RequestBlood> {
             // Address input
             TextField(
               controller: _addressController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Address",
                 border: OutlineInputBorder(),
               ),
@@ -330,14 +330,14 @@ class _RequestBloodState extends State<RequestBlood> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.call),
+                          icon: const Icon(Icons.call),
                           onPressed: () {
                             // Handle call action
                             _makeCall(donor['phone']!);
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.message),
+                          icon: const Icon(Icons.message),
                           onPressed: () {
                             // Handle message action
                             _sendMessage(donor['phone']!);
@@ -347,7 +347,7 @@ class _RequestBloodState extends State<RequestBlood> {
                     ),
                   ),
                 );
-              }).toList()
+              })
             else
               const Text('No matching donors found.'),
           ],

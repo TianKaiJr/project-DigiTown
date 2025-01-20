@@ -9,11 +9,13 @@ import 'transportation.dart';
 import 'blood.dart';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   void goToProfilePage(BuildContext context) {
     Navigator.pop(context);
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ProfilePage()),
+      MaterialPageRoute(builder: (context) => const ProfilePage()),
     );
   }
 
@@ -106,7 +108,7 @@ class HomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => PanchayatPage()),
+                              builder: (context) => const PanchayatPage()),
                         );
                       },
                     ),
@@ -119,7 +121,7 @@ class HomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => PalliativeCarePage()),
+                              builder: (context) => const PalliativeCarePage()),
                         );
                       },
                     ),
@@ -132,7 +134,7 @@ class HomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => TransportationPage()),
+                              builder: (context) => const TransportationPage()),
                         );
                       },
                     ),
@@ -144,7 +146,7 @@ class HomePage extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => BloodPage()),
+                          MaterialPageRoute(builder: (context) => const BloodPage()),
                         );
                       },
                     ),
@@ -176,12 +178,12 @@ class HomePage extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
-              offset: Offset(5, 5),
+              offset: const Offset(5, 5),
             ),
             BoxShadow(
               color: Colors.white.withOpacity(0.7),
               blurRadius: 10,
-              offset: Offset(-5, -5),
+              offset: const Offset(-5, -5),
             ),
           ],
         ),
@@ -193,10 +195,10 @@ class HomePage extends StatelessWidget {
               size: 50,
               color: Colors.white,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
