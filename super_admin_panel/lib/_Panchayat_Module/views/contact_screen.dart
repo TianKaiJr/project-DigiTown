@@ -21,7 +21,6 @@ class ContactScreen extends StatelessWidget {
       appBar: const CustomAppBar(title: "Contacts"),
       body: Column(
         children: [
-          // const PMHeader(name: "Contacts"),
           const SizedBox(
             height: 10,
           ),

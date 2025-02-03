@@ -38,7 +38,6 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.darkThemeMode,
       home: MultiProvider(
         providers: [
-          // Pass ScreenRepository instance to SideMenuViewModel
           ChangeNotifierProvider(
               create: (_) => SideMenuViewModel(screenRepository)),
           ChangeNotifierProvider(
@@ -47,7 +46,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (_) => ContactViewModel()),
           ChangeNotifierProvider(
               create: (_) => HospitalViewModel(HospitalRepository())),
-          ChangeNotifierProvider(create: (_) => DoctorAttendenceViewModel())
+          ChangeNotifierProvider(create: (_) => DoctorAttendenceViewModel()),
         ],
         child: const MainScreen(),
       ),

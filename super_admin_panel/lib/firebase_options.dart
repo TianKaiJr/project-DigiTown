@@ -52,6 +52,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '112985400778',
     projectId: 'project-digitown',
     authDomain: 'project-digitown.firebaseapp.com',
+    databaseURL: 'https://project-digitown-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'project-digitown.firebasestorage.app',
     measurementId: 'G-KDW0ZN12FT',
   );
@@ -70,6 +71,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '112985400778',
     projectId: 'project-digitown',
     authDomain: 'project-digitown.firebaseapp.com',
+    databaseURL: 'https://project-digitown-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'project-digitown.firebasestorage.app',
     measurementId: 'G-5HEMB5PXWM',
   );
