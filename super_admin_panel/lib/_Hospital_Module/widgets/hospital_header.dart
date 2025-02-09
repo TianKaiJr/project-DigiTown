@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/ZTemporary/controllers/menu_app_controller.dart';
-import 'package:super_admin_panel/ZTemporary/responsive.dart';
+import 'package:super_admin_panel/__Core/Controllers/menu_app_controller.dart';
+import 'package:super_admin_panel/__Core/Responsive/responsive.dart';
 
 class HospitalHeader extends StatelessWidget {
   final String name;

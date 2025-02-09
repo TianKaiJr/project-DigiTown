@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/attendence_screen.dart';
+import 'package:super_admin_panel/ZTempModule/temp.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
-import 'package:super_admin_panel/_Hospital_Module/views/live_attendance_screen.dart';
+import 'package:super_admin_panel/_Hospital_Module/views/doctor_attendance_screen.dart';
+import 'package:super_admin_panel/_Hospital_Module/views/doctor_lta_screen.dart';
 import 'package:super_admin_panel/_Hospital_Module/widgets/hospital_header.dart';
 import 'package:super_admin_panel/_Hospital_Module/widgets/option_box.dart';
-import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/appointment_screen.dart';
-
-import 'package:super_admin_panel/ZTemporary/screens/hospital/screens/calender_screen.dart';
 
 class HospitalScreen extends StatelessWidget {
   const HospitalScreen({super.key});
@@ -80,11 +78,11 @@ class HospitalScreen extends StatelessWidget {
   Widget _getScreen(String option) {
     switch (option) {
       case 'attendance':
-        return const AttendanceScreen();
+        return const DoctorAttendanceScreen();
       case 'appointments':
-        return const AppointmentsScreen();
+        return const TempPage();
       case 'calendar':
-        return CalendarScreen();
+        return DoctorLTAScreen();
       default:
         return const Center(
           child: Text(

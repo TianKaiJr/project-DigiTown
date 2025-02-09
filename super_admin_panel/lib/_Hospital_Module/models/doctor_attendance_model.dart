@@ -1,11 +1,11 @@
-class DoctorAttendence {
+class DoctorAttendance {
   final String id;
   final String name;
   final String designation;
   final String status;
   final String timestamp;
 
-  DoctorAttendence({
+  DoctorAttendance({
     required this.id,
     required this.name,
     required this.designation,
@@ -13,8 +13,8 @@ class DoctorAttendence {
     required this.timestamp,
   });
 
-  factory DoctorAttendence.fromMap(Map<String, dynamic> data, String id) {
-    return DoctorAttendence(
+  factory DoctorAttendance.fromMap(String id, Map<String, dynamic> data) {
+    return DoctorAttendance(
       id: id,
       name: data['name'] ?? '',
       designation: data['designation'] ?? '',
