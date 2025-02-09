@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 import '../view_models/doctor_attendance_view_model.dart';
 import '../widgets/doctor_attendance_dialog.dart';
 
@@ -12,11 +13,7 @@ class DoctorAttendanceScreen extends StatelessWidget {
     viewModel.fetchDoctors();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Doctor Attendance"),
-        centerTitle: true,
-        elevation: 5,
-      ),
+      appBar: const CustomAppBar(title: "Doctor Attendance"),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(

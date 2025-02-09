@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../view_models/doctor_lta_view_model.dart';
 import '../widgets/doctor_lta_dialog.dart';
 
 class DoctorLTAScreen extends StatelessWidget {
+  const DoctorLTAScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -12,32 +15,31 @@ class DoctorLTAScreen extends StatelessWidget {
       child: Consumer<DoctorLTAViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-            appBar: AppBar(
-              title: const Text("Doctor Availability Calendar"),
-              centerTitle: true,
-              backgroundColor: Colors.blueAccent,
-            ),
+            appBar: const CustomAppBar(title: "Doctor Availability Calendar"),
             body: Column(
               children: [
-                DropdownButtonFormField<String>(
-                  value: viewModel.selectedDoctorId,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: DropdownButtonFormField<String>(
+                    value: viewModel.selectedDoctorId,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
+                    hint: const Text('Select a Doctor'),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        viewModel.fetchAvailability(newValue);
+                      }
+                    },
+                    items: viewModel.doctors.map((doctor) {
+                      return DropdownMenuItem<String>(
+                        value: doctor['id'],
+                        child: Text(doctor['name'] ?? 'Unknown'),
+                      );
+                    }).toList(),
                   ),
-                  hint: const Text('Select a Doctor'),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      viewModel.fetchAvailability(newValue);
-                    }
-                  },
-                  items: viewModel.doctors.map((doctor) {
-                    return DropdownMenuItem<String>(
-                      value: doctor['id'],
-                      child: Text(doctor['name']),
-                    );
-                  }).toList(),
                 ),
                 if (viewModel.selectedDoctorId != null)
                   Expanded(
@@ -77,9 +79,9 @@ class DoctorLTAScreen extends StatelessWidget {
                             },
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: DoctorLTADialog(),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10.0),
+                          child: const DoctorLTADialog(),
                         ),
                         ElevatedButton(
                           onPressed: () => viewModel.saveAvailability(context),

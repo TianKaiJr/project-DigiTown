@@ -4,18 +4,19 @@ import '../models/doctor_lta_model.dart';
 class DoctorLTARepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Map<String, dynamic>>> fetchDoctors() async {
+  Future<List<Map<String, String>>> fetchDoctors() async {
     final snapshot = await _firestore.collection('Doctors_Attendence').get();
-    return snapshot.docs
-        .map((doc) => {'id': doc.id, 'name': doc['name']})
-        .toList();
+    return snapshot.docs.map((doc) {
+      return {'id': doc.id, 'name': doc['name'] as String};
+    }).toList();
   }
 
   Future<DoctorLTA?> fetchAvailability(String doctorId) async {
     final snapshot =
         await _firestore.collection('Doctors_LTA').doc(doctorId).get();
     if (snapshot.exists) {
-      return DoctorLTA.fromFirestore(snapshot.data() as Map<String, dynamic>);
+      return DoctorLTA.fromFirestore(
+          doctorId, snapshot.data() as Map<String, dynamic>);
     }
     return null;
   }

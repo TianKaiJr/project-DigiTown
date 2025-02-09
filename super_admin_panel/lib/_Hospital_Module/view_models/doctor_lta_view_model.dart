@@ -6,7 +6,7 @@ import '../repositories/doctor_lta_repository.dart';
 class DoctorLTAViewModel extends ChangeNotifier {
   final DoctorLTARepository _repository = DoctorLTARepository();
 
-  List<Map<String, dynamic>> doctors = [];
+  List<Map<String, String>> doctors = [];
   String? selectedDoctorId;
   DateTime focusedDay = DateTime.now();
   DateTime selectedDay = DateTime.now();

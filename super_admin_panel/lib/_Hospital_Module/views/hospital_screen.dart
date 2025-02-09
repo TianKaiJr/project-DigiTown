@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/ZTempModule/temp.dart';
+import 'package:super_admin_panel/ZTempModule/hospital_appointments.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
 import 'package:super_admin_panel/_Hospital_Module/views/doctor_attendance_screen.dart';
 import 'package:super_admin_panel/_Hospital_Module/views/doctor_lta_screen.dart';
@@ -80,7 +80,7 @@ class HospitalScreen extends StatelessWidget {
       case 'attendance':
         return const DoctorAttendanceScreen();
       case 'appointments':
-        return const TempPage();
+        return const AppointmentListPage();
       case 'calendar':
         return DoctorLTAScreen();
       default:

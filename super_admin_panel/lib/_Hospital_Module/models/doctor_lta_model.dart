@@ -4,14 +4,14 @@ class DoctorLTA {
 
   DoctorLTA({required this.doctorId, required this.availability});
 
-  factory DoctorLTA.fromFirestore(Map<String, dynamic> data) {
+  factory DoctorLTA.fromFirestore(String doctorId, Map<String, dynamic> data) {
     Map<DateTime, bool> availability = {};
     data.forEach((key, value) {
       availability[DateTime.parse(key)] = value;
     });
 
     return DoctorLTA(
-      doctorId: data['doctorId'],
+      doctorId: doctorId,
       availability: availability,
     );
   }
