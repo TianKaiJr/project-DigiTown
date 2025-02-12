@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/ZTempModule/temp.dart';
+import 'package:super_admin_panel/__BloodBank_Module/Blood_Requests/blood_screens.dart';
+import 'package:super_admin_panel/__BloodBank_Module/Donation_History/donation.dart';
 import 'package:super_admin_panel/__BloodBank_Module/Donor_Lists/donor_screen.dart';
 import 'package:super_admin_panel/__BloodBank_Module/blood_donation_header.dart';
 import 'package:super_admin_panel/__BloodBank_Module/blood_donation_view_model.dart';
@@ -77,9 +78,9 @@ class BloodDonationScreen extends StatelessWidget {
       case 'donors':
         return const DonorScreen();
       case 'requests':
-        return const TempPage();
+        return const BloodRequestsScreen();
       case 'history':
-        return const TempPage();
+        return const BloodDonationHistoryScreen();
       default:
         return const Center(
           child: Text(
