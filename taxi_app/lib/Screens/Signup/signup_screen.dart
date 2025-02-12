@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:taxi_app/constants.dart';
+import 'package:taxi_app/__Core/constants.dart';
 
-import 'package:taxi_app/responsive.dart';
+import 'package:taxi_app/__Core/responsive.dart';
 import '../../components/background.dart';
 import 'components/sign_up_top_image.dart';
 import 'components/signup_form.dart';

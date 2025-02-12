@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taxi_app/Screens/Main/mainscreen.dart';
 import 'package:taxi_app/Screens/Welcome/welcome_screen.dart';
-import 'package:taxi_app/constants.dart';
+import 'package:taxi_app/__Core/constants.dart';
 
 void main() => runApp(const MyApp());
 

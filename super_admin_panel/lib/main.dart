@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/__BloodBank_Module/blood_donation_repository.dart';
+import 'package:super_admin_panel/__BloodBank_Module/blood_donation_view_model.dart';
 import 'package:super_admin_panel/__Core/Theme/app_theme.dart';
 import 'package:super_admin_panel/_Hospital_Module/repositories/hospital_repository.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/doctor_attendance_view_model.dart';
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
               create: (_) => HospitalViewModel(HospitalRepository())),
           ChangeNotifierProvider(
               create: (context) => DoctorAttendanceViewModel()),
+          ChangeNotifierProvider(
+              create: (_) => BloodDonationViewModel(BloodDonationRepository())),
         ],
         child: const MainScreen(),
       ),

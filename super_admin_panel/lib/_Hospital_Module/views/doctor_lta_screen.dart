@@ -81,7 +81,7 @@ class DoctorLTAScreen extends StatelessWidget {
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 10.0),
-                          child: const DoctorLTADialog(),
+                          child: DoctorLTADialog(),
                         ),
                         ElevatedButton(
                           onPressed: () => viewModel.saveAvailability(context),

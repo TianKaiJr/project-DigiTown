@@ -6,8 +6,7 @@ class DoctorAttendanceDialog extends StatefulWidget {
   final DoctorAttendance? doctor;
   final Function(DoctorAttendance) onSave;
 
-  const DoctorAttendanceDialog({Key? key, this.doctor, required this.onSave})
-      : super(key: key);
+  const DoctorAttendanceDialog({super.key, this.doctor, required this.onSave});
 
   @override
   _DoctorAttendanceDialogState createState() => _DoctorAttendanceDialogState();

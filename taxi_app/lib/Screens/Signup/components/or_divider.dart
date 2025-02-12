@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:taxi_app/constants.dart';
+import 'package:taxi_app/__Core/constants.dart';
 
 class OrDivider extends StatelessWidget {
   const OrDivider({Key? key}) : super(key: key);
