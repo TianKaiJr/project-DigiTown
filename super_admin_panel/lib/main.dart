@@ -15,6 +15,7 @@ import 'package:super_admin_panel/_Panchayat_Module/view_models/contact_view_mod
 import 'package:super_admin_panel/_Panchayat_Module/view_models/panchayat_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:super_admin_panel/ZTempModule/temp.dart';
+import '__BloodBank_Module/Donor_Lists/donor_view_model.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
               create: (context) => DoctorAttendanceViewModel()),
           ChangeNotifierProvider(
               create: (_) => BloodDonationViewModel(BloodDonationRepository())),
+          ChangeNotifierProvider(create: (_) => DonorViewModel()),
         ],
         child: const MainScreen(),
       ),
