@@ -7,7 +7,7 @@ import 'donor_dialog.dart';
 class DonorScreen extends StatefulWidget {
   final bool enableWriteMode; // Added mode toggle
 
-  const DonorScreen({super.key, this.enableWriteMode = false}); // Default: true
+  const DonorScreen({super.key, this.enableWriteMode = true}); // Default: true
 
   @override
   State<DonorScreen> createState() => _DonorScreenState();

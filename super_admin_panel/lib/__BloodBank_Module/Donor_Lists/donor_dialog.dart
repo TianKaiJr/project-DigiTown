@@ -4,7 +4,7 @@ import 'donor_model.dart';
 class DonorDialog extends StatefulWidget {
   final Function(Donor) onSave;
 
-  DonorDialog({required this.onSave});
+  const DonorDialog({super.key, required this.onSave});
 
   @override
   _DonorDialogState createState() => _DonorDialogState();

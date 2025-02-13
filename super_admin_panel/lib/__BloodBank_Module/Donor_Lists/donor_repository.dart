@@ -1,12 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:super_admin_panel/__BloodBank_Module/Donor_Lists/donor_model.dart';
+import 'donor_model.dart';
 
 class DonorRepository {
   final CollectionReference donorCollection =
       FirebaseFirestore.instance.collection('Blood_Donors_List');
 
+  final DocumentReference idCounterRef = FirebaseFirestore.instance
+      .doc('/ID_Counters/permanent_counters_skeleton');
+
+  Future<String> _generateDonorId() async {
+    final DocumentSnapshot snapshot = await idCounterRef.get();
+    if (!snapshot.exists) {
+      await idCounterRef.set({'donor_id': 1});
+      return "1";
+    }
+
+    int currentId = snapshot['donor_id'];
+    int newId = currentId + 1;
+    await idCounterRef.update({'donor_id': newId});
+    return newId.toString();
+  }
+
   Future<void> addDonor(Donor donor) async {
-    await donorCollection.doc(donor.donorId).set(donor.toFirestore());
+    String donorId = await _generateDonorId();
+    donor.donorId = donorId;
+    await donorCollection.doc(donorId).set(donor.toFirestore());
   }
 
   Future<List<Donor>> getDonors() async {
