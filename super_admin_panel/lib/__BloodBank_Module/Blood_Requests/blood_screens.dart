@@ -11,7 +11,7 @@ class BloodRequestsScreen extends StatefulWidget {
 
 class _BloodRequestsScreenState extends State<BloodRequestsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  bool enableWriteMode = true; // Control the visibility of the FAB
+  bool enableWriteMode = false; // Control the visibility of the FAB
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +272,7 @@ class _BloodRequestsScreenState extends State<BloodRequestsScreen> {
                       'contact_number': contactNumberController.text,
                       'request_status': 'Pending',
                       'request_date': Timestamp.now(),
+                      'donor_id': null
                     });
 
                     Navigator.of(context).pop();
