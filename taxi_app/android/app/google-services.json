@@ -1,0 +1,87 @@
+{
+  "project_info": {
+    "project_number": "112985400778",
+    "firebase_url": "https://project-digitown-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "project-digitown",
+    "storage_bucket": "project-digitown.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112985400778:android:86ac80b772f97020e8db33",
+        "android_client_info": {
+          "package_name": "com.digitown.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAbzRXgj1ITLKK7-Q4qKnVFo5ihtLrlPM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112985400778:android:cfef68d1d8e7ac94e8db33",
+        "android_client_info": {
+          "package_name": "com.example.main_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAbzRXgj1ITLKK7-Q4qKnVFo5ihtLrlPM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112985400778:android:f0a14d026829ea1ce8db33",
+        "android_client_info": {
+          "package_name": "com.example.taxi_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAbzRXgj1ITLKK7-Q4qKnVFo5ihtLrlPM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112985400778:android:d5c812fe0aaed79fe8db33",
+        "android_client_info": {
+          "package_name": "com.example.taxi_drivers_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAbzRXgj1ITLKK7-Q4qKnVFo5ihtLrlPM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

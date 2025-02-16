@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
 class ToggleButton extends StatefulWidget {
-  const ToggleButton({super.key});
+  final String userId; // User's Firestore document ID
+
+  const ToggleButton({super.key, required this.userId});
 
   @override
   _ToggleButtonState createState() => _ToggleButtonState();
@@ -21,9 +24,11 @@ class _ToggleButtonState extends State<ToggleButton> {
     _controller.addListener(() async {
       if (_controller.value) {
         print('Toggle is: ON');
+        await _updateAvailability(true);
         await _startLocationUpdates();
       } else {
         print('Toggle is: OFF');
+        await _updateAvailability(false);
         _stopLocationUpdates();
       }
     });
@@ -34,6 +39,18 @@ class _ToggleButtonState extends State<ToggleButton> {
     _controller.dispose();
     _locationTimer?.cancel();
     super.dispose();
+  }
+
+  // Function to update the 'available' field in Firestore
+  Future<void> _updateAvailability(bool isAvailable) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('Driver_Users')
+          .doc(widget.userId)
+          .update({'available': isAvailable ? 'yes' : 'no'});
+    } catch (e) {
+      print('Error updating availability: $e');
+    }
   }
 
   // Function to handle location permissions
@@ -55,7 +72,7 @@ class _ToggleButtonState extends State<ToggleButton> {
     return true;
   }
 
-  // Function to fetch the current location
+  // Function to fetch the current location and store it in Firestore
   Future<void> _fetchLocation() async {
     try {
       bool permissionGranted = await _checkLocationPermission();
@@ -64,6 +81,16 @@ class _ToggleButtonState extends State<ToggleButton> {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       print('Location: Lat: ${position.latitude}, Long: ${position.longitude}');
+
+      // Store location in Firestore under "Driver_Users" collection
+      await FirebaseFirestore.instance
+          .collection('Driver_Users')
+          .doc(widget.userId)
+          .update({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       print('Error fetching location: $e');
     }
@@ -71,8 +98,8 @@ class _ToggleButtonState extends State<ToggleButton> {
 
   // Function to start periodic location updates
   Future<void> _startLocationUpdates() async {
-    await _fetchLocation(); // Fetch the location immediately
-    _locationTimer = Timer.periodic(Duration(minutes: 5), (timer) async {
+    await _fetchLocation(); // Fetch location immediately
+    _locationTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
       await _fetchLocation();
     });
   }

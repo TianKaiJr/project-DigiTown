@@ -38,11 +38,10 @@ class SideBar extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.info),
-            title: Text('Section 3'),
+            leading: Icon(Icons.logout),
+            title: Text('Log Out'),
             onTap: () {
-              Navigator.pop(context);
-              // Add your action here
+              Navigator.pushNamed(context, 'logout');
             },
           ),
         ],
