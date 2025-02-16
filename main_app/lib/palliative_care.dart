@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class PalliativeCarePage extends StatefulWidget {
   const PalliativeCarePage({super.key});
@@ -10,7 +12,6 @@ class PalliativeCarePage extends StatefulWidget {
 class _PalliativeCarePageState extends State<PalliativeCarePage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Form fields
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _pincodeController = TextEditingController();
@@ -19,7 +20,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
 
-  // List of services
   final List<String> _services = [
     'Skilled Nurse',
     'Ambulance',
@@ -29,7 +29,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
     'Medical Equipments',
   ];
 
-  // Select date
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -44,7 +43,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
     }
   }
 
-  // Select time
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -57,12 +55,27 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
     }
   }
 
-  // Submit form
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      await FirebaseFirestore.instance.collection('bookings').add({
+        'name': _nameController.text,
+        'address': _addressController.text,
+        'pincode': _pincodeController.text,
+        'service': _selectedService,
+        'date': _selectedDate != null ? _selectedDate!.toIso8601String() : null,
+        'time': _selectedTime != null ? _selectedTime!.format(context) : null,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Booking Submitted Successfully!')),
       );
+      _formKey.currentState!.reset();
+        setState(() {
+        _selectedService = null;
+        _selectedDate = null;
+        _selectedTime = null;
+      });
     }
   }
 
@@ -71,7 +84,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -81,7 +93,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
               ),
             ),
           ),
-          // AppBar with Transparent Background
           SafeArea(
             child: Column(
               children: [
@@ -104,7 +115,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Patient Name
                             TextFormField(
                               controller: _nameController,
                               decoration: const InputDecoration(
@@ -119,8 +129,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                               },
                             ),
                             const SizedBox(height: 16),
-
-                            // Address
                             TextFormField(
                               controller: _addressController,
                               decoration: const InputDecoration(
@@ -135,8 +143,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                               },
                             ),
                             const SizedBox(height: 16),
-
-                            // Pincode
                             TextFormField(
                               controller: _pincodeController,
                               keyboardType: TextInputType.number,
@@ -155,8 +161,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                               },
                             ),
                             const SizedBox(height: 16),
-
-                            // Service Selection
                             DropdownButtonFormField<String>(
                               decoration: const InputDecoration(
                                 labelText: 'What service do you opt?',
@@ -171,10 +175,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                               items: _services.map((service) {
                                 return DropdownMenuItem(
                                   value: service,
-                                  child: Text(
-                                    service,
-                                    style: const TextStyle(fontWeight: FontWeight.normal),
-                                  ),
+                                  child: Text(service),
                                 );
                               }).toList(),
                               validator: (value) {
@@ -185,8 +186,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                               },
                             ),
                             const SizedBox(height: 16),
-
-                            // Date Selection
                             Row(
                               children: [
                                 Expanded(
@@ -195,15 +194,13 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                     child: Text(
                                       _selectedDate == null
                                           ? 'Select Date'
-                                          : 'Date: ${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}',
+                                          : 'Date: ${_selectedDate!.year}-${_selectedDate!.month}-${_selectedDate!.day}',
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-
-                            // Time Selection
                             Row(
                               children: [
                                 Expanded(
@@ -219,8 +216,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                               ],
                             ),
                             const SizedBox(height: 16),
-
-                            // Submit Button with Gradient
                             GestureDetector(
                               onTap: _submitForm,
                               child: Container(
@@ -228,11 +223,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 height: 50,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFFA8BFF),
-                                      Color(0xFF2BD2FF),
-                                      Color(0xFF2BFF88),
-                                    ],
+                                    colors: [Color(0xFFFA8BFF), Color(0xFF2BD2FF), Color(0xFF2BFF88)],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
@@ -241,10 +232,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 child: const Center(
                                   child: Text(
                                     'Submit',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                    ),
+                                    style: TextStyle(color: Colors.white, fontSize: 18),
                                   ),
                                 ),
                               ),
