@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookingAppoinment extends StatefulWidget {
   const BookingAppoinment({super.key});
@@ -17,15 +18,53 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
 
-  String? _selectedService;
+  List<String> _doctorsList = [];
+  String? _selectedDoctor;
+  Map<DateTime, bool> _availability = {}; // Stores available dates
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDoctors();
+  }
+
+  void _fetchDoctors() async {
+    FirebaseFirestore.instance
+        .collection('Doctors_LTA')
+        .get()
+        .then((querySnapshot) {
+      setState(() {
+        _doctorsList = querySnapshot.docs.map((doc) => doc.id).toList();
+      });
+    }).catchError((error) {
+      print("Error fetching doctors: $error");
+    });
+  }
+
+  void _fetchAvailableDates() async {
+    if (_selectedDoctor == null) return;
+
+    FirebaseFirestore.instance
+        .collection('Doctors_LTA')
+        .doc(_selectedDoctor)
+        .collection('Availability')
+        .get()
+        .then((querySnapshot) {
+      setState(() {
+        _availability = {
+          for (var doc in querySnapshot.docs)
+            DateTime.parse(doc.id): doc['available'] == true,
+        };
+      });
+    }).catchError((error) {
+      print("Error fetching availability: $error");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Book a Service"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Book a Service")),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
         child: Column(
@@ -46,24 +85,27 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
                     children: [
                       _buildTextField("Patient Name", _nameController),
                       const SizedBox(height: 10),
-                      _buildTextField("Phone Number", _phoneController, keyboardType: TextInputType.phone),
+                      _buildTextField("Phone Number", _phoneController,
+                          keyboardType: TextInputType.phone),
                       const SizedBox(height: 10),
                       _buildTextField("Address", _addressController),
                       const SizedBox(height: 10),
-                      _buildDropdownField(
-                        "What service do you opt?",
-                        ["General Consultation", "Specialist Consultation", "Diagnostics"],
-                      ),
+                      _buildDoctorDropdown(),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(child: _buildDatePickerField(context, "Select Date", _dateController)),
+                          Expanded(
+                              child: _buildDatePickerField(
+                                  context, "Select Date", _dateController)),
                           const SizedBox(width: 8),
-                          Expanded(child: _buildTimePickerField(context, "Select Time", _timeController)),
+                          Expanded(
+                              child: _buildTimePickerField(
+                                  context, "Select Time", _timeController)),
                         ],
                       ),
                       const SizedBox(height: 10),
-                      _buildTextField("Reason for Visit", _reasonController, maxLines: 3),
+                      _buildTextField("Reason for Visit", _reasonController,
+                          maxLines: 3),
                     ],
                   ),
                 ),
@@ -76,15 +118,17 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Form submitted successfully!")),
+                      const SnackBar(
+                          content: Text("Form submitted successfully!")),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 15),
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0), // Adjust the radius as needed
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
                 child: const Text("Submit"),
@@ -93,6 +137,25 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDoctorDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: const InputDecoration(
+        labelText: "Select Doctor",
+        border: OutlineInputBorder(),
+      ),
+      items: _doctorsList.map((doctor) {
+        return DropdownMenuItem(value: doctor, child: Text(doctor));
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedDoctor = value;
+          _fetchAvailableDates();
+        });
+      },
+      validator: (value) => value == null ? "Please select a doctor" : null,
     );
   }
 
@@ -106,7 +169,8 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
         labelText: label,
         border: const OutlineInputBorder(),
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
@@ -117,51 +181,33 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
     );
   }
 
-  Widget _buildDropdownField(String label, List<String> options) {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-      ),
-      items: options
-          .map((value) => DropdownMenuItem(
-                value: value,
-                child: Text(value),
-              ))
-          .toList(),
-      onChanged: (newValue) {
-        _selectedService = newValue;
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return "Please select a service";
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildDatePickerField(BuildContext context, String label, TextEditingController controller) {
+  Widget _buildDatePickerField(
+      BuildContext context, String label, TextEditingController controller) {
     return TextFormField(
       controller: controller,
-      readOnly: true,
+      readOnly: true, // Prevents manual typing
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       ),
       onTap: () async {
+        FocusScope.of(context)
+            .requestFocus(FocusNode()); // Prevents keyboard from opening
         DateTime? pickedDate = await showDatePicker(
           context: context,
           initialDate: DateTime.now(),
           firstDate: DateTime.now(),
           lastDate: DateTime(2101),
         );
+
         if (pickedDate != null) {
-          controller.text = "${pickedDate.toLocal()}".split(' ')[0];
+          setState(() {
+            controller.text =
+                "${pickedDate.toLocal()}".split(' ')[0]; // Formats date
+          });
         }
       },
       validator: (value) {
@@ -173,15 +219,14 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
     );
   }
 
-  Widget _buildTimePickerField(BuildContext context, String label, TextEditingController controller) {
+  Widget _buildTimePickerField(
+      BuildContext context, String label, TextEditingController controller) {
     return TextFormField(
       controller: controller,
       readOnly: true,
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        border: OutlineInputBorder(),
       ),
       onTap: () async {
         TimeOfDay? pickedTime = await showTimePicker(
