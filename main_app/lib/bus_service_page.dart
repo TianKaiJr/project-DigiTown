@@ -1,179 +1,169 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class BusServicePage extends StatefulWidget {
-  const BusServicePage({super.key});
-
   @override
-  _BusServicePageState createState() => _BusServicePageState();
+  _BusSearchPageState createState() => _BusSearchPageState();
 }
 
-class _BusServicePageState extends State<BusServicePage> {
-  final List<Route> routes = [
-    Route("1", {"Malayattor": 0, "Neeleswaram": 15, "Kalady": 20, "Angamaly": 30}),
-    Route("2", {"Angamaly": 0, "Kalady": 10, "Neeleswaram": 15, "Malayattor": 30}),
-    Route("3", {"Perumbavoor": 0, "Vallam": 10, "Okkal": 15, "Kalady": 20, "Angamaly": 30}),
-    Route("4", {"Angamaly": 0, "Kalady": 10, "Okkal": 15, "Vallam": 20, "Perumbavoor": 30}),
-  ];
-
-  final List<Bus> buses = [
-    Bus("Friends", "3", [10.00, 11.15, 12.00]),
-    Bus("Geo Travels", "4", [9.00, 10.45, 11.30, 15.00]),
-    Bus("Metro Express", "1", [8.30, 9.45, 12.15, 14.00]),
-    Bus("City Link", "2", [7.00, 9.30, 11.45, 13.15]),
-    Bus("Fast Wheels", "3", [6.45, 8.50, 10.40, 13.30]),
-  ];
-
+class _BusSearchPageState extends State<BusServicePage> {
   String start = "";
   String end = "";
-  double searchTime = 0.0;
+  int searchHour = 0;
+  int searchMinute = 0;
   List<Map<String, dynamic>> result = [];
 
-  void searchBuses() {
-    result.clear();
-    List<Route> selectedRoutes = [];
+  final TextEditingController startController = TextEditingController();
+  final TextEditingController endController = TextEditingController();
+  final TextEditingController timeController = TextEditingController();
 
-    String normalizedStart = start.toLowerCase();
-    String normalizedEnd = end.toLowerCase();
+  @override
+  void initState() {
+    super.initState();
+    // Set default time to current system time
+    DateTime now = DateTime.now();
+    searchHour = now.hour;
+    searchMinute = now.minute;
+    timeController.text = "${searchHour.toString().padLeft(2, '0')}.${searchMinute.toString().padLeft(2, '0')}";
+  }
 
-    for (var route in routes) {
-      Map<String, int> normalizedDestinations = {
-        for (var key in route.destinations.keys) key.toLowerCase(): route.destinations[key]!
-      };
+  Future<void> searchBuses() async {
+    try {
+      String start = startController.text.trim();
+      String end = endController.text.trim();
+      String timeInput = timeController.text.trim();
 
-      if (normalizedDestinations.containsKey(normalizedStart) && normalizedDestinations.containsKey(normalizedEnd)) {
-        int timeDiff = normalizedDestinations[normalizedEnd]! - normalizedDestinations[normalizedStart]!;
-        if (timeDiff > 0) {
-          selectedRoutes.add(Route(route.routeName, normalizedDestinations));
-        }
+      // Validate time input format (HH.MM)
+      if (!timeInput.contains('.')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Enter time in HH.MM format (e.g., 10.30)")),
+        );
+        return;
       }
-    }
 
-    for (var selectedRoute in selectedRoutes) {
-      int startTime = selectedRoute.destinations[normalizedStart]!;
-      for (var bus in buses) {
-        if (bus.route == selectedRoute.routeName) {
-          for (var time in bus.startTimes) {
-            int baseHours = time.toInt();
-            int baseMinutes = ((time - baseHours) * 100).round();
+      // Parse time input
+      List<String> timeParts = timeInput.split('.');
+      searchHour = int.tryParse(timeParts[0]) ?? 0;
+      searchMinute = int.tryParse(timeParts[1]) ?? 0;
 
-            int arrivalMinutes = baseMinutes + startTime;
-            int arrivalHours = baseHours + (arrivalMinutes ~/ 60);
-            arrivalMinutes %= 60;
+      QuerySnapshot busSnapshot = await FirebaseFirestore.instance.collection('buses').get();
+      List<Map<String, dynamic>> foundBuses = [];
 
-            String arrivalTime = "${arrivalHours.toString().padLeft(2, '0')}:${arrivalMinutes.toString().padLeft(2, '0')}";
+      for (var busDoc in busSnapshot.docs) {
+        var busData = busDoc.data() as Map<String, dynamic>;
+        DocumentReference routeRef = busData['route'];
+        DocumentSnapshot routeDoc = await routeRef.get();
 
-            if ((arrivalHours * 60 + arrivalMinutes) >= (searchTime.toInt() * 60 + ((searchTime - searchTime.toInt()) * 100).toInt())) {
-              result.add({"bus": bus.name, "arrival_time": arrivalTime});
+        if (routeDoc.exists) {
+          var routeData = routeDoc.data() as Map<String, dynamic>;
+          Map<String, dynamic> destinations = Map<String, dynamic>.from(routeData['destinations']);
+
+          if (destinations.containsKey(start) && destinations.containsKey(end)) {
+            int startMinutes = int.tryParse(destinations[start].toString()) ?? 0;
+            int endMinutes = int.tryParse(destinations[end].toString()) ?? 0;
+
+            if (startMinutes < endMinutes) {
+              for (var time in busData['startTimes']) {
+                double startTime = double.tryParse(time.toString()) ?? 0.0;
+                int startHour = startTime.floor(); // Extract hour
+                int startMinute = ((startTime - startHour) * 100).round(); // Extract minutes
+
+                // Convert to total minutes from midnight
+                int totalMinutes = (startHour * 60) + startMinute + startMinutes;
+                int arrivalHours = totalMinutes ~/ 60;
+                int arrivalMinutes = totalMinutes % 60;
+
+                // Compare user time and bus arrival time
+                if (arrivalHours > searchHour || (arrivalHours == searchHour && arrivalMinutes >= searchMinute)) {
+                  foundBuses.add({
+                    "bus": busData['name'],
+                    "arrival_time": "${arrivalHours.toString().padLeft(2, '0')}:${arrivalMinutes.toString().padLeft(2, '0')}"
+                  });
+                }
+              }
             }
           }
         }
       }
+
+      // Sort buses by arrival time
+      foundBuses.sort((a, b) {
+        List<String> timeA = a['arrival_time'].split(':');
+        List<String> timeB = b['arrival_time'].split(':');
+        int totalMinutesA = int.parse(timeA[0]) * 60 + int.parse(timeA[1]);
+        int totalMinutesB = int.parse(timeB[0]) * 60 + int.parse(timeB[1]);
+        return totalMinutesA.compareTo(totalMinutesB);
+      });
+
+      setState(() {
+        result = foundBuses;
+      });
+    } catch (e) {
+      print("Error fetching data: $e");
     }
-    result.sort((a, b) => a["arrival_time"].compareTo(b["arrival_time"]));
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bus Service'),
-        backgroundColor: Colors.blue,
-      ),
+      appBar: AppBar(title: Text("Bus Search")),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text(
-              'Welcome to Bus Service',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
             TextField(
-              decoration: const InputDecoration(
-                labelText: "Starting Point",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (val) => start = val,
+              controller: startController,
+              decoration: InputDecoration(labelText: "Enter Start Point"),
             ),
-            const SizedBox(height: 15),
             TextField(
-              decoration: const InputDecoration(
-                labelText: "Ending Point",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (val) => end = val,
+              controller: endController,
+              decoration: InputDecoration(labelText: "Enter End Point"),
             ),
-            const SizedBox(height: 15),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: "Time (HH.MM)",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              onChanged: (val) => searchTime = double.tryParse(val) ?? 0.0,
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: timeController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(labelText: "Enter Time (HH.MM format)"),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.access_time),
+                  onPressed: () {
+                    DateTime now = DateTime.now();
+                    setState(() {
+                      searchHour = now.hour;
+                      searchMinute = now.minute;
+                      timeController.text = "${searchHour.toString().padLeft(2, '0')}.${searchMinute.toString().padLeft(2, '0')}";
+                    });
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 16),
             ElevatedButton(
               onPressed: searchBuses,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text(
-                "Search Buses",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              child: Text("Search Buses"),
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: result.length,
+                itemBuilder: (context, index) {
+                  var bus = result[index];
+                  return ListTile(
+                    leading: Icon(Icons.directions_bus), // Bus icon
+                    title: Text("Bus: ${bus['bus']}"),
+                    trailing: Text("Arrival Time: ${bus['arrival_time']}"),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 20),
-            result.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No buses available",
-                      style: TextStyle(fontSize: 18, color: Colors.black54),
-                    ),
-                  )
-                : Expanded(
-                    child: ListView.builder(
-                      itemCount: result.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          elevation: 4,
-                          child: ListTile(
-                            leading: const Icon(Icons.directions_bus, color: Colors.blue),
-                            title: Text(
-                              "Bus: ${result[index]["bus"]}",
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              "Arrival Time: ${result[index]["arrival_time"]}",
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
           ],
         ),
       ),
     );
   }
-}
-
-class Route {
-  String routeName;
-  Map<String, int> destinations; // Destination -> Time taken
-
-  Route(this.routeName, this.destinations);
-}
-
-class Bus {
-  String name;
-  String route;
-  List<double> startTimes; // Start times in HH.MM format
-
-  Bus(this.name, this.route, this.startTimes);
 }
