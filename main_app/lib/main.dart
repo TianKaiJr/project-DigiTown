@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         'y': (context) => const BookingAppoinment(),
       },
       title: 'Login',
-      home: AuthWrapper(),
+      home: const AuthWrapper(),
     );
   }
 }

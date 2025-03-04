@@ -25,7 +25,7 @@ class LoginPage extends StatelessWidget {
         // Navigate to HomePage on successful login
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>  HomePage()),
+          MaterialPageRoute(builder: (context) =>  const HomePage()),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(

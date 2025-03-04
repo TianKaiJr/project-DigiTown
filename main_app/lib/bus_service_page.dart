@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class BusServicePage extends StatefulWidget {
+  const BusServicePage({super.key});
+
   @override
   _BusSearchPageState createState() => _BusSearchPageState();
 }
@@ -37,7 +39,7 @@ class _BusSearchPageState extends State<BusServicePage> {
       // Validate time input format (HH.MM)
       if (!timeInput.contains('.')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Enter time in HH.MM format (e.g., 10.30)")),
+          const SnackBar(content: Text("Enter time in HH.MM format (e.g., 10.30)")),
         );
         return;
       }
@@ -107,18 +109,18 @@ class _BusSearchPageState extends State<BusServicePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Bus Search")),
+      appBar: AppBar(title: const Text("Bus Search")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: startController,
-              decoration: InputDecoration(labelText: "Enter Start Point"),
+              decoration: const InputDecoration(labelText: "Enter Start Point"),
             ),
             TextField(
               controller: endController,
-              decoration: InputDecoration(labelText: "Enter End Point"),
+              decoration: const InputDecoration(labelText: "Enter End Point"),
             ),
             Row(
               children: [
@@ -126,11 +128,11 @@ class _BusSearchPageState extends State<BusServicePage> {
                   child: TextField(
                     controller: timeController,
                     keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: "Enter Time (HH.MM format)"),
+                    decoration: const InputDecoration(labelText: "Enter Time (HH.MM format)"),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.access_time),
+                  icon: const Icon(Icons.access_time),
                   onPressed: () {
                     DateTime now = DateTime.now();
                     setState(() {
@@ -142,19 +144,19 @@ class _BusSearchPageState extends State<BusServicePage> {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: searchBuses,
-              child: Text("Search Buses"),
+              child: const Text("Search Buses"),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
                 itemCount: result.length,
                 itemBuilder: (context, index) {
                   var bus = result[index];
                   return ListTile(
-                    leading: Icon(Icons.directions_bus), // Bus icon
+                    leading: const Icon(Icons.directions_bus), // Bus icon
                     title: Text("Bus: ${bus['bus']}"),
                     trailing: Text("Arrival Time: ${bus['arrival_time']}"),
                   );

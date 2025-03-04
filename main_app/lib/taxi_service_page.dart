@@ -12,42 +12,28 @@ class TaxiServicePage extends StatefulWidget {
 
 class _TaxiServicePageState extends State<TaxiServicePage> {
   Position? _userPosition;
-  Timer? _locationTimer;
+  List<Map<String, dynamic>> _availableDrivers = [];
+  bool _hasSearched = false;
+  bool _showBookNow = true;
 
   Future<void> _getUserLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied.');
-    }
+    bool hasPermission = await _checkLocationPermission();
+    if (!hasPermission) return;
 
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.best);
     setState(() {
       _userPosition = position;
+      _showBookNow = false;
     });
 
-    // Print user location with high precision (7 decimal places)
-    print('User Location: Lat: ${position.latitude.toStringAsFixed(7)}, Lng: ${position.longitude.toStringAsFixed(7)}, Accuracy: ${position.accuracy}m');
-    
-    _findNearestAvailableDriver();
+    print('User Location: Lat: ${position.latitude.toStringAsFixed(7)}, '
+        'Lng: ${position.longitude.toStringAsFixed(7)}, Accuracy: ${position.accuracy}m');
+
+    _findNearestAvailableDrivers();
   }
 
-  Future<void> _findNearestAvailableDriver() async {
+  Future<void> _findNearestAvailableDrivers() async {
     if (_userPosition == null) return;
 
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -55,95 +41,36 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
         .where('available', isEqualTo: 'yes')
         .get();
 
-    if (querySnapshot.docs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No available drivers found')),
-      );
-      return;
-    }
-
-    var nearestDriver;
-    double shortestDistance = double.infinity;
+    List<Map<String, dynamic>> drivers = [];
 
     for (var doc in querySnapshot.docs) {
       double driverLat = doc['latitude'];
       double driverLng = doc['longitude'];
       double distance = Geolocator.distanceBetween(
           _userPosition!.latitude, _userPosition!.longitude, driverLat, driverLng);
-
-      if (distance < shortestDistance) {
-        shortestDistance = distance;
-        nearestDriver = doc;
-      }
+      
+      drivers.add({
+        'id': doc.id,
+        'name': doc['name'],
+        'phone': doc['phone'],
+        'latitude': driverLat,
+        'longitude': driverLng,
+        'distance': distance,
+      });
     }
 
-    if (nearestDriver != null) {
-      _showDriverDetails(nearestDriver);
-    }
-  }
+    drivers.sort((a, b) => a['distance'].compareTo(b['distance']));
 
-  void _showDriverDetails(QueryDocumentSnapshot driver) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Nearest Available Driver'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Driver: ${driver['name']}'),
-            Text('Phone: ${driver['phone']}'),
-            Text('Distance: ${Geolocator.distanceBetween(
-              _userPosition!.latitude, _userPosition!.longitude,
-              driver['latitude'], driver['longitude'],
-            ).toStringAsFixed(2)} meters'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _startLocationUpdates() async {
-    await _getUserLocation(); // Fetch location immediately
-    _locationTimer = Timer.periodic(Duration(minutes: 5), (timer) async {
-      await _getUserLocation();
+    setState(() {
+      _availableDrivers = drivers;
+      _hasSearched = true;
     });
   }
 
-  Future<bool> _checkLocationPermission() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        print('Location permissions are denied.');
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      print('Location permissions are permanently denied.');
-      return false;
-    }
-
-    return true;
-  }
-
-  Future<void> _fetchLocation() async {
-    try {
-      bool permissionGranted = await _checkLocationPermission();
-      if (!permissionGranted) return;
-
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      print('Location: Lat: ${position.latitude.toStringAsFixed(7)}, Long: ${position.longitude.toStringAsFixed(7)}');
-    } catch (e) {
-      print('Error fetching location: $e');
-    }
+  void _bookDriver(Map<String, dynamic> driver) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('You have booked ${driver['name']}')),
+    );
   }
 
   @override
@@ -162,13 +89,69 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _getUserLocation,
-              child: const Text('Book Now'),
-            ),
+            if (_showBookNow)
+              ElevatedButton(
+                onPressed: _getUserLocation,
+                child: const Text('Book Now'),
+              ),
+            const SizedBox(height: 20),
+            if (_hasSearched && _availableDrivers.isEmpty)
+              const Text('No drivers found'),
+            if (_availableDrivers.isNotEmpty)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _availableDrivers.length,
+                  itemBuilder: (context, index) {
+                    final driver = _availableDrivers[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(driver['name']),
+                        subtitle: Text(
+                          'Phone: ${driver['phone']}\nDistance: ${driver['distance'].toStringAsFixed(2)} meters',
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () => _bookDriver(driver),
+                          child: const Text('Book'),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  Future<bool> _checkLocationPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled.')),
+      );
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied.')),
+        );
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Location permissions are permanently denied.')),
+      );
+      return false;
+    }
+
+    return true;
   }
 }

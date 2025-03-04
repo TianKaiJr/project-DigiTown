@@ -226,7 +226,7 @@ class _BookingAppoinmentState extends State<BookingAppoinment> {
       readOnly: true,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
       ),
       onTap: () async {
         TimeOfDay? pickedTime = await showTimePicker(
