@@ -23,7 +23,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         'x': (context) => const ProfilePage(),
-        'y': (context) => const BookingAppointment(),
+        'y': (context) => const BookingAppointment(hospitalId: '',
+    hospitalName: '',
+    departments: [],),
       },
       title: 'Login',
       home: const AuthWrapper(),

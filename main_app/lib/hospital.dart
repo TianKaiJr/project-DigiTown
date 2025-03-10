@@ -1,51 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // For launching URLs (e.g., calls, maps)
+import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'booking_appoinment.dart'; 
 
 class HospitalPage extends StatefulWidget {
-  const HospitalPage({super.key});
+  const HospitalPage({Key? key}) : super(key: key);
 
   @override
   _HospitalPageState createState() => _HospitalPageState();
 }
 
 class _HospitalPageState extends State<HospitalPage> {
-  final List<Map<String, String>> hospitals = [
-    {
-      'name': 'City Hospital',
-      'address': '123 Main Street, Cityville',
-      'phone': '1234567890',
-    },
-    {
-      'name': 'Town Health Center',
-      'address': '456 Elm Street, Townsville',
-      'phone': '0987654321',
-    },
-    {
-      'name': 'Sunrise Medical',
-      'address': '789 Oak Street, Sunnytown',
-      'phone': '1122334455',
-    },
-    {
-      'name': 'Green Valley Clinic',
-      'address': '101 Pine Street, Greenfield',
-      'phone': '5566778899',
-    },
-  ];
+  // Updated types to List<Map<String, dynamic>>
+  List<Map<String, dynamic>> hospitals = [];
+  List<Map<String, dynamic>> filteredHospitals = [];
 
-  List<Map<String, String>> filteredHospitals = [];
   final TextEditingController _searchController = TextEditingController();
 
   final List<String> healthTips = [
     'Drink plenty of water to stay hydrated.',
     'Get at least 7-8 hours of sleep daily.',
     'Wash your hands regularly to avoid infections.',
-    'Exercise for at least 30 minutes a day.'
+    'Exercise for at least 30 minutes a day.',
   ];
 
   @override
   void initState() {
     super.initState();
-    filteredHospitals = hospitals;
+    // Fetch hospitals from Firestore on startup
+    _fetchHospitals();
+    // Listen for search-bar changes
     _searchController.addListener(_filterHospitals);
   }
 
@@ -55,16 +39,53 @@ class _HospitalPageState extends State<HospitalPage> {
     super.dispose();
   }
 
+  /// Fetch hospital data from the 'Hospitals' collection in Firestore
+  Future<void> _fetchHospitals() async {
+    try {
+      final QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('Hospitals').get();
+
+      // Convert each document into a Map<String, dynamic>
+      final List<Map<String, dynamic>> fetchedHospitals = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // If "Departments" is an array in Firestore:
+        final List<String> departmentList = data['Departments'] == null
+            ? <String>[]
+            : List<String>.from(data['Departments']);
+
+        return {
+          'id': doc.id, // Store the hospital doc ID
+          'name': data['Name']?.toString() ?? '',
+          'address': data['Address']?.toString() ?? '',
+          'phone': data['Phone']?.toString() ?? '',
+          'departments': departmentList,
+        };
+      }).toList();
+
+      setState(() {
+        hospitals = fetchedHospitals;
+        filteredHospitals = fetchedHospitals;
+      });
+    } catch (e) {
+      debugPrint('Error fetching hospitals: $e');
+    }
+  }
+
+  /// Filter hospitals based on search text
   void _filterHospitals() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       filteredHospitals = hospitals.where((hospital) {
-        return hospital['name']!.toLowerCase().contains(query) ||
-            hospital['address']!.toLowerCase().contains(query);
+        final name = (hospital['name'] ?? '') as String;
+        final address = (hospital['address'] ?? '') as String;
+        return name.toLowerCase().contains(query) ||
+               address.toLowerCase().contains(query);
       }).toList();
     });
   }
 
+  /// Launch phone dialer
   void _launchCaller(String phoneNumber) async {
     final Uri url = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(url)) {
@@ -74,6 +95,7 @@ class _HospitalPageState extends State<HospitalPage> {
     }
   }
 
+  /// Launch Google Maps for the given address
   void _launchMaps(String address) async {
     final Uri url = Uri(
       scheme: 'https',
@@ -88,207 +110,142 @@ class _HospitalPageState extends State<HospitalPage> {
     }
   }
 
-  void _openAppointmentForm(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Book Appointment'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Phone'),
-              keyboardType: TextInputType.phone,
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Preferred Date'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hospital Services'),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10.0),
-                  child: Text(
-                    'Welcome to the Hospital Service Page',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 10.0),
+              child: Text(
+                'Welcome to the Hospital Service Page',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10.0),
-              const Text(
-                'Nearby Hospitals',
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 10.0),
+          const Text(
+            'Nearby Hospitals',
+            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10.0),
+
+          /// Search Bar
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              labelText: 'Search Hospitals',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
               ),
-              const SizedBox(height: 10.0),
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: 'Search Hospitals',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              ...filteredHospitals.map((hospital) => Card(
-                    child: ListTile(
-                      title: Text(hospital['name']!),
-                      subtitle: Text(hospital['address']!),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildIcon(
-                            context,
-                            icon: Icons.map,
-                            label: 'Open Location',
-                            onTap: () => _launchMaps(hospital['address']!),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildIcon(
-                            context,
-                            icon: Icons.phone,
-                            label: 'Call Hospital',
-                            onTap: () => _launchCaller(hospital['phone']!),
-                          ),
-                          const SizedBox(width: 8),
-                          _buildIcon(
-                            context,
-                            icon: Icons.medical_services,
-                            label: 'Doctor Availability',
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const DoctorsAvailabilityPage(),
-                              ),
-                            ),
-                          ),
-                        ],
+            ),
+          ),
+          const SizedBox(height: 10.0),
+
+          /// Hospital List
+          ...filteredHospitals.map(
+            (hospital) => Card(
+              child: ListTile(
+                title: Row(
+                  children: [
+                    /// Hospital Name (Expanded so it won't get truncated)
+                    Expanded(
+                      child: Text(
+                        hospital['name'] ?? 'Unknown Hospital',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                  )),
-              const SizedBox(height: 20.0),
-              const Text(
-                'Book an Appointment',
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, 'y'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+
+                    /// Book Now Button
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        textStyle: const TextStyle(fontSize: 12),
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingAppointment(
+                            hospitalId: hospital['id'],
+                            hospitalName: hospital['name'],
+                            departments: hospital['departments'],
+                          ),
+                        ),
+                      ),
+                      child: const Text('Book Now'),
+                    ),
+                    const SizedBox(width: 6),
+
+                    /// Call Icon
+                    IconButton(
+                      icon: const Icon(Icons.phone, size: 20, color: Colors.blue),
+                      onPressed: () => _launchCaller(hospital['phone'] ?? ''),
+                      tooltip: 'Call',
+                    ),
+
+                    /// Location Icon
+                    IconButton(
+                      icon: const Icon(Icons.map, size: 20, color: Colors.blue),
+                      onPressed: () => _launchMaps(hospital['address'] ?? ''),
+                      tooltip: 'Location',
+                    ),
+
+                    /// Facilities Icon
+                    IconButton(
+                      icon: const Icon(Icons.business, size: 20, color: Colors.blue),
+                      onPressed: () {
+                        // TODO: Implement "Facilities" action
+                      },
+                      tooltip: 'Facilities',
+                    ),
+                  ],
                 ),
-                child: const Text('Book Now'),
+                subtitle: Text(hospital['address'] ?? ''),
               ),
-              const SizedBox(height: 20.0),
-              const Text(
-                'Location and Navigation',
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10.0),
-              Card(
-                child: ListTile(
-                  title: const Text('Find Nearby Hospitals'),
-                  trailing: const Icon(Icons.map, color: Colors.blue),
-                  onTap: () {
-                    _launchMaps('hospitals near me');
-                  },
-                ),
-              ),
-              const SizedBox(height: 20.0),
-              const Text(
-                'Health Tips',
-                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10.0),
-              ...healthTips.map((tip) => ListTile(
-                    leading: const Icon(Icons.check_circle, color: Colors.green),
-                    title: Text(tip),
-                  )),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildIcon(BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(label)),
-        );
-      },
-      child: Tooltip(
-        message: label,
-        child: Icon(icon, size: 28, color: Theme.of(context).primaryColor),
-      ),
-    );
-  }
-}
-
-class DoctorsAvailabilityPage extends StatelessWidget {
-  const DoctorsAvailabilityPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Doctors Availability'),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(12.0),
-        children: const [
-          ListTile(
-            title: Text('Dr. John Doe'),
-            subtitle: Text('Available: 9:00 AM - 5:00 PM'),
-            leading: Icon(Icons.person, size: 40, color: Colors.blue),
+            ),
           ),
-          ListTile(
-            title: Text('Dr. Jane Smith'),
-            subtitle: Text('Available: 11:00 AM - 4:00 PM'),
-            leading: Icon(Icons.person, size: 40, color: Colors.green),
+
+          const SizedBox(height: 20.0),
+
+          /// Location and Navigation
+          const Text(
+            'Location and Navigation',
+            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10.0),
+          Card(
+            child: ListTile(
+              title: const Text('Find Nearby Hospitals'),
+              trailing: const Icon(Icons.map, color: Colors.blue),
+              onTap: () {
+                _launchMaps('hospitals near me');
+              },
+            ),
+          ),
+
+          const SizedBox(height: 20.0),
+
+          /// Health Tips
+          const Text(
+            'Health Tips',
+            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10.0),
+          ...healthTips.map(
+            (tip) => ListTile(
+              leading: const Icon(Icons.check_circle, color: Colors.green),
+              title: Text(tip),
+            ),
           ),
         ],
       ),
