@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/ZTempModule/complaints.dart';
+import 'package:super_admin_panel/_Panchayat_Module/Complaints/complaints.dart';
 import 'package:super_admin_panel/_Panchayat_Module/view_models/panchayat_view_model.dart';
 import 'package:super_admin_panel/_Panchayat_Module/views/contact_screen.dart';
 import 'package:super_admin_panel/_Panchayat_Module/views/news_events_screen.dart';

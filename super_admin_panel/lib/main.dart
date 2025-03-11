@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/_Auth/auth_page.dart';
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_repository.dart';
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_view_model.dart';
+import 'package:super_admin_panel/_PalliativeCare_Module/p_repository.dart';
+import 'package:super_admin_panel/_PalliativeCare_Module/p_view_model.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_repository.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_view_model.dart';
 import 'package:super_admin_panel/__Core/Theme/app_theme.dart';
@@ -59,8 +62,13 @@ class MyApp extends StatelessWidget {
             create: (_) =>
                 TransportServiceViewModel(TransportServiceRepository()),
           ),
+          ChangeNotifierProvider(
+            create: (_) =>
+                PalliativeServiceViewModel(PalliativeServiceRepository()),
+          ),
         ],
-        child: const MainScreen(),
+        // child: const MainScreen(),
+        child: const AuthPage(),
       ),
       routes: {
         'dashboard': (context) => const TempPage(),
