@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/ZTempModule/hospital_appointments.dart';
 import 'package:super_admin_panel/_Hospital_Module/Add_Departments/hospital_dept.dart';
+import 'package:super_admin_panel/_Hospital_Module/Add_Doctors/add_doctors.dart';
 import 'package:super_admin_panel/_Hospital_Module/Add_Hospitals/add_hospitals.dart';
 import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
 import 'package:super_admin_panel/_Hospital_Module/views/doctor_attendance_screen.dart';
@@ -89,6 +90,8 @@ class HospitalScreen extends StatelessWidget {
         return const HospitalDepartmentsScreen();
       case 'addhosp':
         return const AddHospitalsScreen();
+      case 'adddoc':
+        return DoctorCRUDScreen();
       default:
         return const Center(
           child: Text(

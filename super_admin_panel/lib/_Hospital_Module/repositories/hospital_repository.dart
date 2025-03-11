@@ -17,6 +17,8 @@ class HospitalRepository {
           id: 'dept', title: "Departments", icon: Icons.business),
       HospitalOptionModel(
           id: 'addhosp', title: "Add Hospitals", icon: Icons.add),
+      HospitalOptionModel(
+          id: 'adddoc', title: "Add Doctors", icon: Icons.person),
     ];
   }
 }
