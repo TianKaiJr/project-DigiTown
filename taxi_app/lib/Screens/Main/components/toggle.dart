@@ -76,7 +76,16 @@ class _ToggleButtonState extends State<ToggleButton> {
   Future<void> _fetchLocation() async {
     try {
       bool permissionGranted = await _checkLocationPermission();
-      if (!permissionGranted) return;
+      if (!permissionGranted) {
+        await FirebaseFirestore.instance
+            .collection('Driver_Users')
+            .doc(widget.userId)
+            .update({
+          'latitude': 10.192659,
+          'longitude': 76.386865,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
 
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);

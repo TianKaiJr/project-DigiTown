@@ -13,6 +13,10 @@ class HospitalRepository {
           id: 'calendar', title: "DA Calendar", icon: Icons.calendar_month),
       HospitalOptionModel(
           id: 'appointments', title: "Appointments", icon: CupertinoIcons.time),
+      HospitalOptionModel(
+          id: 'dept', title: "Departments", icon: Icons.business),
+      HospitalOptionModel(
+          id: 'addhosp', title: "Add Hospitals", icon: Icons.add),
     ];
   }
 }

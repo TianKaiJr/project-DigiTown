@@ -10,7 +10,7 @@ class AppointmentListPage extends StatefulWidget {
 }
 
 class _AppointmentListPageState extends State<AppointmentListPage> {
-  bool enable_WriteMode = false;
+  bool enable_WriteMode = true;
 
   @override
   Widget build(BuildContext context) {

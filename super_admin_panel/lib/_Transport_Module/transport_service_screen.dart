@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/ZTempModule/temp.dart';
+import 'package:super_admin_panel/_Transport_Module/Taxi_Service/taxi_service.dart';
 import 'package:super_admin_panel/_Transport_Module/option_box.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_header.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_view_model.dart';
@@ -74,7 +75,7 @@ class TransportServiceScreen extends StatelessWidget {
   Widget _getScreen(String option) {
     switch (option) {
       case 'taxi':
-        return const TempPage();
+        return const TaxiServiceScreen();
       case 'routes':
         return const TempPage();
       default:
