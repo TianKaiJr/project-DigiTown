@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/doctor_attendance_model.dart';
-import '../repositories/doctor_attendance_repository.dart';
+import 'doctor_attendance_model.dart';
+import 'doctor_attendance_repository.dart';
 
 class DoctorAttendanceViewModel extends ChangeNotifier {
   final DoctorAttendanceRepository _repository = DoctorAttendanceRepository();

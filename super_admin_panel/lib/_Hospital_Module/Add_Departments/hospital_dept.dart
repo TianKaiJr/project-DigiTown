@@ -85,7 +85,7 @@ class _HospitalDepartmentsScreenState extends State<HospitalDepartmentsScreen> {
   }
 
   void _showUpdateDialog(String deptId, String currentName) {
-    final TextEditingController _updateController =
+    final TextEditingController updateController =
         TextEditingController(text: currentName);
 
     showDialog(
@@ -94,7 +94,7 @@ class _HospitalDepartmentsScreenState extends State<HospitalDepartmentsScreen> {
         return AlertDialog(
           title: const Text('Update Department'),
           content: TextField(
-            controller: _updateController,
+            controller: updateController,
             decoration: const InputDecoration(
               labelText: 'Department Name',
               border: OutlineInputBorder(),
@@ -109,12 +109,12 @@ class _HospitalDepartmentsScreenState extends State<HospitalDepartmentsScreen> {
             ),
             TextButton(
               onPressed: () async {
-                if (_updateController.text.isNotEmpty) {
+                if (updateController.text.isNotEmpty) {
                   await _firestore
                       .collection('Hospital_Departments')
                       .doc(deptId)
                       .update({
-                    'name': _updateController.text,
+                    'name': updateController.text,
                   });
                   Navigator.pop(context); // Close the dialog
                 }

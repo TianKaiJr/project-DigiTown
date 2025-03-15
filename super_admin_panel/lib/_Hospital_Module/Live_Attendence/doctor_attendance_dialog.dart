@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/doctor_attendance_model.dart';
+import 'doctor_attendance_model.dart';
 
 class DoctorAttendanceDialog extends StatefulWidget {
   final DoctorAttendance? doctor;

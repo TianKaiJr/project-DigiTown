@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../models/doctor_lta_model.dart';
-import '../repositories/doctor_lta_repository.dart';
+import 'doctor_lta_model.dart';
+import 'doctor_lta_repository.dart';
 
 class DoctorLTAViewModel extends ChangeNotifier {
   final DoctorLTARepository _repository = DoctorLTARepository();

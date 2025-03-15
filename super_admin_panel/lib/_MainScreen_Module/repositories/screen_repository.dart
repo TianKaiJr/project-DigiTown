@@ -1,4 +1,4 @@
-import 'package:super_admin_panel/_Hospital_Module/views/hospital_screen.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_screen.dart';
 import 'package:super_admin_panel/_PalliativeCare_Module/p_screen.dart';
 import 'package:super_admin_panel/_Panchayat_Module/views/panchayat_screen.dart';
 import 'package:super_admin_panel/ZTempModule/temp.dart';

@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/doctor_lta_model.dart';
+import 'doctor_lta_model.dart';
 
 class DoctorLTARepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Map<String, String>>> fetchDoctors() async {
-    final snapshot = await _firestore.collection('Doctors_Attendence').get();
+    final snapshot = await _firestore.collection('Doctors').get();
     return snapshot.docs.map((doc) {
-      return {'id': doc.id, 'name': doc['name'] as String};
+      return {'id': doc.id, 'name': doc['Name'] as String};
     }).toList();
   }
 

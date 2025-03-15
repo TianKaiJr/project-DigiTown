@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 
 class DoctorCRUDScreen extends StatefulWidget {
+  const DoctorCRUDScreen({super.key});
+
   @override
   _DoctorCRUDScreenState createState() => _DoctorCRUDScreenState();
 }
@@ -28,15 +31,24 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
             children: [
               TextField(
                   controller: nameController,
-                  decoration: InputDecoration(labelText: 'Name')),
+                  decoration: const InputDecoration(labelText: 'Name')),
+              const SizedBox(
+                height: 10,
+              ),
               TextField(
                   controller: specializationController,
-                  decoration: InputDecoration(labelText: 'Specialization')),
+                  decoration:
+                      const InputDecoration(labelText: 'Specialization')),
+              const SizedBox(
+                height: 10,
+              ),
               StreamBuilder<QuerySnapshot>(
                 stream:
                     _firestore.collection('Hospital_Departments').snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) return CircularProgressIndicator();
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
                   var departments = snapshot.data!.docs
                       .map((doc) => doc['name'].toString())
                       .toList();
@@ -48,14 +60,19 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
                         .map((dep) =>
                             DropdownMenuItem(value: dep, child: Text(dep)))
                         .toList(),
-                    decoration: InputDecoration(labelText: 'Department'),
+                    decoration: const InputDecoration(labelText: 'Department'),
                   );
                 },
+              ),
+              const SizedBox(
+                height: 10,
               ),
               StreamBuilder<QuerySnapshot>(
                 stream: _firestore.collection('Hospitals').snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) return CircularProgressIndicator();
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
                   var hospitals = snapshot.data!.docs;
                   return DropdownButtonFormField<DocumentReference>(
                     value: selectedHospital,
@@ -67,7 +84,7 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
                               child: Text(doc['Name']),
                             ))
                         .toList(),
-                    decoration: InputDecoration(labelText: 'Hospital'),
+                    decoration: const InputDecoration(labelText: 'Hospital'),
                   );
                 },
               ),
@@ -75,13 +92,16 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(context), child: Text('Cancel')),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             TextButton(
               onPressed: () async {
                 if (nameController.text.isEmpty ||
                     specializationController.text.isEmpty ||
                     selectedDepartment == null ||
-                    selectedHospital == null) return;
+                    selectedHospital == null) {
+                  return;
+                }
                 if (doc == null) {
                   await _firestore.collection('Doctors').add({
                     'Name': nameController.text,
@@ -99,7 +119,7 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
                 }
                 Navigator.pop(context);
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -110,12 +130,13 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Doctor Management')),
+      appBar: const CustomAppBar(title: 'Doctor Management'),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('Doctors').snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
           var doctors = snapshot.data!.docs;
           return ListView.builder(
             itemCount: doctors.length,
@@ -133,8 +154,8 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
                     }
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
                   ],
                 ),
                 onTap: () => _showDoctorDialog(doc: doc),
@@ -145,7 +166,7 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showDoctorDialog(),
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:super_admin_panel/_Hospital_Module/models/hospital_option_model.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_option_model.dart';
 
 class HospitalRepository {
   List<HospitalOptionModel> getOptions() {

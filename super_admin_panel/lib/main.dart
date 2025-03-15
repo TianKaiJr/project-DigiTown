@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/_Auth/auth_page.dart';
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_repository.dart';
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_view_model.dart';
 import 'package:super_admin_panel/_PalliativeCare_Module/p_repository.dart';
@@ -8,10 +7,10 @@ import 'package:super_admin_panel/_PalliativeCare_Module/p_view_model.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_repository.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_view_model.dart';
 import 'package:super_admin_panel/__Core/Theme/app_theme.dart';
-import 'package:super_admin_panel/_Hospital_Module/repositories/hospital_repository.dart';
-import 'package:super_admin_panel/_Hospital_Module/view_models/doctor_attendance_view_model.dart';
-import 'package:super_admin_panel/_Hospital_Module/view_models/hospital_view_model.dart';
-import 'package:super_admin_panel/_Hospital_Module/views/hospital_screen.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_repository.dart';
+import 'package:super_admin_panel/_Hospital_Module/Live_Attendence/doctor_attendance_view_model.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_view_model.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_screen.dart';
 import 'package:super_admin_panel/_MainScreen_Module/repositories/screen_repository.dart';
 import 'package:super_admin_panel/_MainScreen_Module/view_models/main_screen_view_model.dart';
 import 'package:super_admin_panel/_MainScreen_Module/view_models/side_menu_view_model.dart';
@@ -67,8 +66,8 @@ class MyApp extends StatelessWidget {
                 PalliativeServiceViewModel(PalliativeServiceRepository()),
           ),
         ],
-        // child: const MainScreen(),
-        child: const AuthPage(),
+        child: const MainScreen(),
+        // child: const AuthPage(),
       ),
       routes: {
         'dashboard': (context) => const TempPage(),

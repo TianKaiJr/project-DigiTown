@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:super_admin_panel/_Hospital_Module/models/hospital_option_model.dart';
-import 'package:super_admin_panel/_Hospital_Module/repositories/hospital_repository.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_option_model.dart';
+import 'package:super_admin_panel/_Hospital_Module/hospital_repository.dart';
 
 class HospitalViewModel extends ChangeNotifier {
   final HospitalRepository _repository;

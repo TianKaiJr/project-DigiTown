@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 
 class PalliativeAppointmentsScreen extends StatefulWidget {
+  const PalliativeAppointmentsScreen({super.key});
+
   @override
   _PalliativeAppointmentsScreenState createState() =>
       _PalliativeAppointmentsScreenState();

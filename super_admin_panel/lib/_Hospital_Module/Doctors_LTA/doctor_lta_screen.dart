@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../view_models/doctor_lta_view_model.dart';
-import '../widgets/doctor_lta_dialog.dart';
+import 'doctor_lta_view_model.dart';
+import 'doctor_lta_dialog.dart';
 
 class DoctorLTAScreen extends StatelessWidget {
   const DoctorLTAScreen({super.key});

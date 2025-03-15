@@ -175,11 +175,11 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
 
   void _showUpdateDialog(String hospitalId, String currentName,
       String currentAddress, List<String> currentDepartments) {
-    final TextEditingController _updateNameController =
+    final TextEditingController updateNameController =
         TextEditingController(text: currentName);
-    final TextEditingController _updateAddressController =
+    final TextEditingController updateAddressController =
         TextEditingController(text: currentAddress);
-    List<String> _updatedDepartments = List.from(currentDepartments);
+    List<String> updatedDepartments = List.from(currentDepartments);
 
     showDialog(
       context: context,
@@ -193,7 +193,7 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
-                      controller: _updateNameController,
+                      controller: updateNameController,
                       decoration: const InputDecoration(
                         labelText: 'Hospital Name',
                         border: OutlineInputBorder(),
@@ -201,7 +201,7 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: _updateAddressController,
+                      controller: updateAddressController,
                       decoration: const InputDecoration(
                         labelText: 'Address',
                         border: OutlineInputBorder(),
@@ -220,7 +220,7 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
                             }).toList(),
                             onChange: (allSelectedItems, selectedItem) {
                               setState(() {
-                                _updatedDepartments =
+                                updatedDepartments =
                                     List<String>.from(allSelectedItems);
                               });
                             },
@@ -235,16 +235,16 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
                 ),
                 TextButton(
                   onPressed: () async {
-                    if (_updateNameController.text.isNotEmpty &&
-                        _updateAddressController.text.isNotEmpty) {
+                    if (updateNameController.text.isNotEmpty &&
+                        updateAddressController.text.isNotEmpty) {
                       try {
                         await _firestore
                             .collection('Hospitals')
                             .doc(hospitalId)
                             .update({
-                          'Name': _updateNameController.text,
-                          'Address': _updateAddressController.text,
-                          'Departments': _updatedDepartments,
+                          'Name': updateNameController.text,
+                          'Address': updateAddressController.text,
+                          'Departments': updatedDepartments,
                         });
                         Navigator.pop(context);
                       } catch (e) {

@@ -154,7 +154,7 @@ class _RouteListScreenState extends State<RouteListScreen> {
                 title: Text(route['routeName'] ?? 'Unknown Route'),
                 subtitle: Text(
                   destinationsList
-                      .where((d) => d is Map<String, dynamic>)
+                      .whereType<Map<String, dynamic>>()
                       .map((d) =>
                           '${d['name'] ?? 'Unknown'} (${d['time'] ?? 0} min)')
                       .join(', '),
@@ -169,8 +169,8 @@ class _RouteListScreenState extends State<RouteListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
         onPressed: _showAddRouteDialog,
+        child: const Icon(Icons.add),
       ),
     );
   }
