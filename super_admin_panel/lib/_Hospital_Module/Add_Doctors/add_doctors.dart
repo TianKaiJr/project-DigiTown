@@ -108,6 +108,8 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
                     'Specialization': specializationController.text,
                     'Department': selectedDepartment,
                     'Hospital': selectedHospital,
+                    'status': 'Leave',
+                    'timestamp': FieldValue.serverTimestamp(),
                   });
                 } else {
                   await doc.reference.update({
@@ -115,6 +117,8 @@ class _DoctorCRUDScreenState extends State<DoctorCRUDScreen> {
                     'Specialization': specializationController.text,
                     'Department': selectedDepartment,
                     'Hospital': selectedHospital,
+                    'status': 'Leave',
+                    'timestamp': FieldValue.serverTimestamp(),
                   });
                 }
                 Navigator.pop(context);

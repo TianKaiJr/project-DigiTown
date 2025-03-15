@@ -8,6 +8,10 @@ class DoctorAttendanceViewModel extends ChangeNotifier {
 
   List<DoctorAttendance> get doctors => _doctors;
 
+  DoctorAttendanceViewModel() {
+    fetchDoctors();
+  }
+
   void fetchDoctors() {
     _repository.getDoctorsStream().listen((data) {
       _doctors = data;
@@ -15,15 +19,8 @@ class DoctorAttendanceViewModel extends ChangeNotifier {
     });
   }
 
-  Future<void> addOrUpdateDoctor(DoctorAttendance doctor) async {
-    await _repository.addOrUpdateDoctor(doctor);
-  }
-
-  Future<void> deleteDoctor(String id) async {
-    await _repository.deleteDoctor(id);
-  }
-
   Future<void> toggleAvailability(String id, bool isAvailable) async {
     await _repository.toggleAvailability(id, isAvailable);
+    notifyListeners();
   }
 }

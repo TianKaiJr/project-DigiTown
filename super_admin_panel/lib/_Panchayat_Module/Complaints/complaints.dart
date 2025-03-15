@@ -12,7 +12,7 @@ class ComplaintListPage extends StatefulWidget {
 }
 
 class _ComplaintListPageState extends State<ComplaintListPage> {
-  bool enable_WriteMode = false;
+  bool enable_WriteMode = true;
 
   @override
   Widget build(BuildContext context) {

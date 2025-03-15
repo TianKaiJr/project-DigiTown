@@ -78,8 +78,11 @@ class DoctorLTAViewModel extends ChangeNotifier {
   Future<void> saveAvailability(BuildContext context) async {
     if (selectedDoctorId == null) return;
 
-    Map<String, dynamic> saveData = availabilityMap
-        .map((key, value) => MapEntry(key.toIso8601String(), value));
+    Map<String, dynamic> saveData = availabilityMap.map((key, value) {
+      String formattedKey =
+          key.toIso8601String().split('.')[0]; // Removes milliseconds and 'Z'
+      return MapEntry(formattedKey, value);
+    });
 
     await _firestore
         .collection('Doctors_LTA')
