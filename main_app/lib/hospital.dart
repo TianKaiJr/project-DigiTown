@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'booking_appoinment.dart'; 
+import 'booking_appoinment.dart';
 
 class HospitalPage extends StatefulWidget {
   const HospitalPage({Key? key}) : super(key: key);
@@ -40,28 +40,52 @@ class _HospitalPageState extends State<HospitalPage> {
   }
 
   /// Fetch hospital data from the 'Hospitals' collection in Firestore
+  /// and also look up each department's name from 'Hospital_Departments'.
   Future<void> _fetchHospitals() async {
     try {
       final QuerySnapshot snapshot =
           await FirebaseFirestore.instance.collection('Hospitals').get();
 
-      // Convert each document into a Map<String, dynamic>
-      final List<Map<String, dynamic>> fetchedHospitals = snapshot.docs.map((doc) {
+      final List<Map<String, dynamic>> fetchedHospitals = [];
+
+      // Process each hospital document
+      for (final doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
 
-        // If "Departments" is an array in Firestore:
-        final List<String> departmentList = data['Departments'] == null
-            ? <String>[]
-            : List<String>.from(data['Departments']);
+        // Convert the raw Firestore array to List<String> safely
+        final List<String> departmentIds = (data['Departments'] as List<dynamic>?)
+            ?.map((item) => item.toString())
+            .toList() 
+            ?? <String>[];
 
-        return {
+        // For each department doc ID, fetch the 'Hospital_Departments' doc
+        final deptDocs = await Future.wait(
+          departmentIds.map((deptId) =>
+            FirebaseFirestore.instance
+              .collection('Hospital_Departments')
+              .doc(deptId)
+              .get()
+          ),
+        );
+
+        // Convert each fetched doc into a department name
+        final List<String> departmentNames = deptDocs.map<String>((d) {
+          if (d.exists) {
+            final deptData = d.data();
+            return deptData?['name'] ?? 'Unknown Department';
+          }
+          return 'Unknown Department';
+        }).toList();
+
+        fetchedHospitals.add({
           'id': doc.id, // Store the hospital doc ID
           'name': data['Name']?.toString() ?? '',
           'address': data['Address']?.toString() ?? '',
           'phone': data['Phone']?.toString() ?? '',
-          'departments': departmentList,
-        };
-      }).toList();
+          // Instead of storing raw IDs, we now store the actual department names:
+          'departments': departmentNames,
+        });
+      }
 
       setState(() {
         hospitals = fetchedHospitals;

@@ -1,0 +1,35 @@
+{
+    "provider": "google_pay",
+    "data": {
+      "environment": "TEST",
+      "apiVersion": 2,
+      "apiVersionMinor": 0,
+      "allowedPaymentMethods": [
+        {
+          "type": "CARD",
+          "parameters": {
+            "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+            "allowedCardNetworks": ["AMEX", "DISCOVER", "JCB", "MASTERCARD", "VISA"]
+          },
+          "tokenizationSpecification": {
+            "type": "PAYMENT_GATEWAY",
+            "parameters": {
+              "gateway": "example", 
+              "gatewayMerchantId": "exampleGatewayMerchantId"
+            }
+          }
+        }
+      ],
+      "merchantInfo": {
+        "merchantId": "12345678901234567890", 
+        "merchantName": "Your Merchant Name"
+      },
+      "transactionInfo": {
+        "totalPriceStatus": "FINAL",
+        "totalPrice": "500.00",
+        "currencyCode": "INR",
+        "countryCode": "IN"
+      }
+    }
+  }
+  
