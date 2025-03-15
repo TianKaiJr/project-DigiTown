@@ -4,9 +4,9 @@ import 'package:super_admin_panel/_Hospital_Module/Appointments/hospital_appoint
 import 'package:super_admin_panel/_Hospital_Module/Add_Departments/hospital_dept.dart';
 import 'package:super_admin_panel/_Hospital_Module/Add_Doctors/add_doctors.dart';
 import 'package:super_admin_panel/_Hospital_Module/Add_Hospitals/add_hospitals.dart';
+import 'package:super_admin_panel/_Hospital_Module/Doctors_LTA/doctors_LTA.dart';
 import 'package:super_admin_panel/_Hospital_Module/hospital_view_model.dart';
 import 'package:super_admin_panel/_Hospital_Module/Live_Attendence/doctor_attendance_screen.dart';
-import 'package:super_admin_panel/_Hospital_Module/Doctors_LTA/doctor_lta_screen.dart';
 import 'package:super_admin_panel/_Hospital_Module/hospital_header.dart';
 import 'package:super_admin_panel/_Hospital_Module/option_box.dart';
 
@@ -85,13 +85,13 @@ class HospitalScreen extends StatelessWidget {
       case 'appointments':
         return const AppointmentListPage();
       case 'calendar':
-        return const DoctorLTAScreen();
+        return const DoctorLTAScreen2();
       case 'dept':
         return const HospitalDepartmentsScreen();
       case 'addhosp':
         return const AddHospitalsScreen();
       case 'adddoc':
-        return DoctorCRUDScreen();
+        return const DoctorCRUDScreen();
       default:
         return const Center(
           child: Text(
