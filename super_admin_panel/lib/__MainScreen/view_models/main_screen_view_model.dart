@@ -1,12 +1,13 @@
-// lib/view_models/main_screen_view_model.dart
-
 import 'package:flutter/material.dart';
 import '../repositories/screen_repository.dart';
 
 class MainScreenViewModel extends ChangeNotifier {
   final ScreenRepository _screenRepository;
 
-  MainScreenViewModel(this._screenRepository);
+  MainScreenViewModel(this._screenRepository) {
+    // Set the default screen to Dashboard
+    currentScreenNotifier.value = _screenRepository.getScreens().first.screen;
+  }
 
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 

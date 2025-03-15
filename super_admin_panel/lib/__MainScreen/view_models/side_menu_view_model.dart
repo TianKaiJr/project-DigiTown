@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:super_admin_panel/_MainScreen_Module/models/screen_model.dart';
+import 'package:super_admin_panel/__MainScreen/models/screen_model.dart';
 import '../repositories/screen_repository.dart';
 
 class SideMenuViewModel extends ChangeNotifier {

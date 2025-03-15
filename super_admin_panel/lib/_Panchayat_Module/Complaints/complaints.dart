@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:super_admin_panel/__Core/Theme/app_pallete.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 
 class ComplaintListPage extends StatefulWidget {

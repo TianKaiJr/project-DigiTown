@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/_MainScreen_Module/view_models/main_screen_view_model.dart';
-import 'package:super_admin_panel/__Core/Theme/app_pallete.dart';
-import 'package:super_admin_panel/_MainScreen_Module/views/side_menu.dart';
+import 'package:super_admin_panel/__MainScreen/view_models/main_screen_view_model.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
+import 'package:super_admin_panel/__MainScreen/views/side_menu.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});

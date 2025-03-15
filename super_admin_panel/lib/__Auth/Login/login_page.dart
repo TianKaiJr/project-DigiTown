@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:super_admin_panel/_Auth/Login/forgot_password_screen.dart';
-import 'package:super_admin_panel/_Auth/Login/register_screen.dart';
+import 'package:super_admin_panel/__Auth/Login/forgot_password_screen.dart';
+import 'package:super_admin_panel/__Auth/Login/register_screen.dart';
 
 class DarkLoginScreen extends StatefulWidget {
   const DarkLoginScreen({super.key});

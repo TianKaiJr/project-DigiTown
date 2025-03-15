@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:super_admin_panel/__Core/Theme/app_pallete.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 import '../view_models/contact_view_model.dart';
 import '../widgets/contact_dialog.dart';

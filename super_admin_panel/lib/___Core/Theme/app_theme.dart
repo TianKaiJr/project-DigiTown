@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:super_admin_panel/__Core/Theme/app_pallete.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 
 class AppTheme {
   // Border decoration function
