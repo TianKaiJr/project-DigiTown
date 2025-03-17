@@ -25,7 +25,7 @@ class _TaxiServiceScreenState extends State<TaxiServiceScreen> {
   //       permission == LocationPermission.deniedForever) {
   //     return;
   //   }
-  //   Position position = await Geolocator.getCurrentPosition( 
+  //   Position position = await Geolocator.getCurrentPosition(
   //       desiredAccuracy: LocationAccuracy.high);
   //   setState(() {
   //     _currentPosition = position;
