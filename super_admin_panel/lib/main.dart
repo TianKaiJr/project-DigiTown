@@ -7,6 +7,7 @@ import 'package:super_admin_panel/_PalliativeCare_Module/p_view_model.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_repository.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_view_model.dart';
 import 'package:super_admin_panel/__Auth/auth_page.dart';
+import 'package:super_admin_panel/__Settings/restart.dart';
 import 'package:super_admin_panel/___Core/Theme/app_theme.dart';
 import 'package:super_admin_panel/_Hospital_Module/hospital_repository.dart';
 import 'package:super_admin_panel/_Hospital_Module/Live_Attendence/doctor_attendance_view_model.dart';
@@ -15,7 +16,7 @@ import 'package:super_admin_panel/_Hospital_Module/hospital_screen.dart';
 import 'package:super_admin_panel/__MainScreen/repositories/screen_repository.dart';
 import 'package:super_admin_panel/__MainScreen/view_models/main_screen_view_model.dart';
 import 'package:super_admin_panel/__MainScreen/view_models/side_menu_view_model.dart';
-import 'package:super_admin_panel/__MainScreen/views/main_screen.dart';
+// import 'package:super_admin_panel/__MainScreen/views/main_screen.dart';
 import 'package:super_admin_panel/_Panchayat_Module/view_models/contact_view_model.dart';
 import 'package:super_admin_panel/_Panchayat_Module/view_models/panchayat_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -28,7 +29,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(const RestartWidget(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
