@@ -75,7 +75,7 @@ class PalliativeServiceScreen extends StatelessWidget {
   Widget _getScreen(String option) {
     switch (option) {
       case 'appointments':
-        return PalliativeAppointmentsScreen();
+        return const PalliativeAppointmentsScreen();
       default:
         return const Center(
           child: Text(

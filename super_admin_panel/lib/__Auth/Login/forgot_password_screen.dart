@@ -1,7 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> _resetPassword() async {
+    if (_emailController.text.isEmpty) {
+      _showSnackBar("Error", "Please enter your email", ContentType.failure);
+      return;
+    }
+    try {
+      await _auth.sendPasswordResetEmail(email: _emailController.text.trim());
+      _showSnackBar(
+          "Success", "Password reset email sent!", ContentType.success);
+    } catch (e) {
+      _showSnackBar("Error", e.toString(), ContentType.failure);
+    }
+  }
+
+  void _showSnackBar(String title, String message, ContentType type) {
+    final snackBar = SnackBar(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      content: AwesomeSnackbarContent(
+        title: title,
+        message: message,
+        contentType: type,
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +60,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               width: 400,
               decoration: BoxDecoration(
-                color: Colors.black
-                    .withOpacity(0.6), // Semi-transparent background
+                color: Colors.black.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -44,8 +81,9 @@ class ForgotPasswordScreen extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   // Email Field
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
                       labelText: "EMAIL",
                       labelStyle: TextStyle(color: Colors.white70),
                       filled: true,
@@ -54,7 +92,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                         borderSide: BorderSide(color: Colors.white70),
                       ),
                     ),
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 20),
 
@@ -62,7 +100,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _resetPassword,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
                         padding: const EdgeInsets.symmetric(vertical: 15),

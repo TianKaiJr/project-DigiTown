@@ -31,7 +31,7 @@ class _OptionBoxState extends State<OptionBox> {
           height: 150,
           width: 150,
           decoration: BoxDecoration(
-            color: isHovered ? Colors.redAccent : Colors.red,
+            color: isHovered ? Colors.blueAccent : Colors.lightBlue,
             borderRadius: BorderRadius.circular(15),
             boxShadow: isHovered
                 ? [const BoxShadow(color: Colors.black26, blurRadius: 10)]
