@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class RegisterPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -7,8 +9,9 @@ class RegisterPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // Firebase Authentication instance
+  // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   RegisterPage({super.key});
 
@@ -16,22 +19,30 @@ class RegisterPage extends StatelessWidget {
   void _registerUser(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Register the user using Firebase Authentication
+        // Register user with Firebase Authentication
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        // Optionally, you can set the user's display name (nameController)
-        await userCredential.user?.updateDisplayName(nameController.text.trim());
+        User? user = userCredential.user;
 
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully!')),
-        );
+        if (user != null) {
+          // Save user data to Firestore
+          await _firestore.collection('Users').doc(user.uid).set({
+            'name': nameController.text.trim(),
+            'email': emailController.text.trim(),
+            'createdAt': FieldValue.serverTimestamp(),
+          });
 
-        // Navigate back to Login page after successful registration
-        Navigator.pop(context);
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account created successfully!')),
+          );
+
+          // Navigate back to login
+          Navigator.pop(context);
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Registration Failed: ${e.toString()}")),

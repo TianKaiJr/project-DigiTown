@@ -1,0 +1,34 @@
+{
+  "provider": "google_pay",
+  "data": {
+    "environment": "TEST",
+    "apiVersion": 2,
+    "apiVersionMinor": 0,
+    "allowedPaymentMethods": [
+      {
+        "type": "CARD",
+        "parameters": {
+          "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+          "allowedCardNetworks": ["AMEX", "DISCOVER", "JCB", "MASTERCARD", "VISA"]
+        },
+        "tokenizationSpecification": {
+          "type": "PAYMENT_GATEWAY",
+          "parameters": {
+            "gateway": "Razorpay",
+            "gatewayMerchantId": "Q8MCJk7PmVJQHy"
+          }
+        }
+      }
+    ],
+    "merchantInfo": {
+      "merchantId": "Q8MCJk7PmVJQHy",
+      "merchantName": "Digi Kalady"
+    },
+    "transactionInfo": {
+      "totalPriceStatus": "FINAL",
+      "totalPrice": "0.00", 
+      "currencyCode": "INR",
+      "countryCode": "IN"
+    }
+  }
+}

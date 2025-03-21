@@ -33,7 +33,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   image_picker: ^0.8.8+10
-  url_launcher: ^6.1.7
+  url_launcher: ^6.3.1
   firebase_core: ^3.9.0
   firebase_auth: ^5.3.4
   cloud_firestore: ^5.6.2
@@ -45,7 +45,8 @@ dependencies:
   printing: ^5.14.2
   qr_flutter: ^4.1.0
   twilio_flutter: ^0.9.0
-  pay: ^3.2.0
+  curved_navigation_bar: ^1.0.6
+  razorpay_flutter: ^1.4.0
   
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -74,7 +75,9 @@ flutter:
   assets:
       - assets/lottie/bus.json
       - assets/lottie/no_data.json
-      - assets/gpay_payment_profile.json
+      - assets/config.json
+      - assets/icons/gpay_icon.png
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

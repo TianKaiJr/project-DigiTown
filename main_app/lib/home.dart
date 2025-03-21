@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:main_app/components/drawer.dart';
 import 'package:main_app/profile_page.dart';
 import 'hospital.dart';
-import 'panchayat.dart';
+import 'E-panchayath/panchayat.dart';
 import 'palliative_care.dart';
 import 'transportation.dart';
 import 'blood.dart';
