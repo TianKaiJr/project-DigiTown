@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/_Panchayat_Module/Complaints/complaints.dart';
 import 'package:super_admin_panel/_Panchayat_Module/view_models/panchayat_view_model.dart';
 import 'package:super_admin_panel/_Panchayat_Module/views/contact_screen.dart';
 import 'package:super_admin_panel/_Panchayat_Module/views/news_events_screen.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/pm_header.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/panchayat_option_box.dart';
-import 'package:super_admin_panel/ZTempModule/temp.dart';
 
 class PanchayatScreen extends StatelessWidget {
   const PanchayatScreen({super.key});
@@ -74,7 +74,7 @@ class PanchayatScreen extends StatelessWidget {
   Widget _getSelectedScreen(String optionId) {
     switch (optionId) {
       case 'complaints':
-        return const TempPage();
+        return const ComplaintListPage();
       case 'contacts':
         return const ContactScreen();
       case 'news_events':

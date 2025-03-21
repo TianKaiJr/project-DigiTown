@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:super_admin_panel/Core/Theme/app_pallete.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'package:super_admin_panel/_Panchayat_Module/models/update_model.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/update_view_popup.dart';

@@ -13,3 +13,15 @@ lib/
     └── contact_dialog.dart
 
 */
+
+/*
+
+lib/
+├── Contact_List/
+│   └── contact_model.dart
+│   └── contact_view_model.dart
+│   └── contact_screen.dart
+│   └── contact_repository.dart
+    └── contact_dialog.dart
+
+*/
