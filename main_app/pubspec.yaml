@@ -78,7 +78,8 @@ flutter:
       - assets/lottie/no_data.json
       - assets/config.json
       - assets/icons/gpay_icon.png
-      - assets\logo.png
+      - assets/logo.png
+      - assets/Doctor.png
 
 
   # To add assets to your application, add an assets section, like this:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:main_app/components/custom_IconButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'booking_appoinment.dart';
@@ -192,12 +193,9 @@ class _HospitalPageState extends State<HospitalPage> {
                     ),
 
                     /// Book Now Button
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        textStyle: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => Navigator.push(
+                  CustomIconButton(
+                    onTap: () {
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => BookingAppointment(
@@ -205,11 +203,11 @@ class _HospitalPageState extends State<HospitalPage> {
                             hospitalName: hospital['name'],
                             departments: hospital['departments'],
                           ),
-                        ),
                       ),
-                      child: const Text('Book Now'),
-                    ),
-                    const SizedBox(width: 6),
+                      );
+                    },
+                    imagePath: 'assets/Doctor.png',
+                  ),
 
                     /// Call Icon
                     IconButton(
