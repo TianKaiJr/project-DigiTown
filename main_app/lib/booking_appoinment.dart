@@ -12,6 +12,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'ticket_preview.dart';  // <-- Import your second file
 import 'smsservice.dart';
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 class BookingAppointment extends StatefulWidget {
   final String hospitalId;
@@ -790,19 +791,21 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        if (_selectedDate == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please select a date.")),
-                          );
-                          return;
-                        }
-                        _showCustomPaymentSheet();
-                      }
-                    },
-                    child: const Text("Book Now"),
-                  ),
+                      onPressed: () {
+                        NetworkUtils.checkAndProceed(context, () {
+                          if (_formKey.currentState!.validate()) {
+                            if (_selectedDate == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Please select a date.")),
+                              );
+                               return;
+                          }
+                          _showCustomPaymentSheet();
+                          }
+                      });
+                      },
+                      child: const Text("Book Now"),
+                    ),
                 ),
               ],
             ),

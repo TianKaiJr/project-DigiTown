@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 class PalliativeCarePage extends StatefulWidget {
   const PalliativeCarePage({super.key});
@@ -55,28 +55,20 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
     }
   }
 
-  void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      await FirebaseFirestore.instance.collection('bookings').add({
-        'name': _nameController.text,
-        'address': _addressController.text,
-        'pincode': _pincodeController.text,
-        'service': _selectedService,
-        'date': _selectedDate?.toIso8601String(),
-        'time': _selectedTime?.format(context),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking Submitted Successfully!')),
-      );
-      _formKey.currentState!.reset();
-        setState(() {
-        _selectedService = null;
-        _selectedDate = null;
-        _selectedTime = null;
-      });
-    }
+  void _submitForm() {
+    NetworkUtils.checkAndProceed(context, () async {
+      if (_formKey.currentState!.validate()) {
+        await FirebaseFirestore.instance.collection('bookings').add({
+          'name': _nameController.text,
+          'address': _addressController.text,
+          'pincode': _pincodeController.text,
+          'service': _selectedService,
+          'date': _selectedDate?.toIso8601String(),
+          'time': _selectedTime?.format(context),
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    });
   }
 
   @override
@@ -84,15 +76,6 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFFDEE9), Color(0xFFB5FFFC)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
           SafeArea(
             child: Column(
               children: [
@@ -189,28 +172,36 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => _selectDate(context),
-                                    child: Text(
-                                      _selectedDate == null
-                                          ? 'Select Date'
-                                          : 'Date: ${_selectedDate!.year}-${_selectedDate!.month}-${_selectedDate!.day}',
+                                  child: TextFormField(
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                      labelText: 'Select Date',
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
                                     ),
+                                    controller: TextEditingController(
+                                      text: _selectedDate == null
+                                          ? ''
+                                          : '${_selectedDate!.year}-${_selectedDate!.month}-${_selectedDate!.day}',
+                                    ),
+                                    onTap: () => _selectDate(context),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
+                                const SizedBox(width: 12),
                                 Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => _selectTime(context),
-                                    child: Text(
-                                      _selectedTime == null
-                                          ? 'Select Time'
-                                          : 'Time: ${_selectedTime!.format(context)}',
+                                  child: TextFormField(
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                      labelText: 'Select Time',
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8)),
                                     ),
+                                    controller: TextEditingController(
+                                      text: _selectedTime == null
+                                          ? ''
+                                          : _selectedTime!.format(context),
+                                    ),
+                                    onTap: () => _selectTime(context),
                                   ),
                                 ),
                               ],
@@ -222,11 +213,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
                                 width: double.infinity,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFA8BFF), Color(0xFF2BD2FF), Color(0xFF2BFF88)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
+                                  color: Colors.red,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Center(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 class RegisterPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -169,18 +170,22 @@ class RegisterPage extends StatelessWidget {
                           const SizedBox(height: 24),
                           // Register button
                           ElevatedButton(
-                            onPressed: () => _registerUser(context),
+                            onPressed: () {
+                              NetworkUtils.checkAndProceed(context, () {
+                                 _registerUser(context);
+                              });
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              minimumSize: const Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                               minimumSize: const Size(double.infinity, 50),
                             ),
                             child: const Text(
                               'REGISTER',
                               style: TextStyle(fontSize: 18, color: Colors.white),
-                            ),
+                              ),
                           ),
                           const SizedBox(height: 16),
                           // Back to Login button
