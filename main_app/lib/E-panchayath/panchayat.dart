@@ -18,7 +18,7 @@ class PanchayatPage extends StatefulWidget {
 class _PanchayatPageState extends State<PanchayatPage> {
   int _currentIndex = 0;
   final List<Widget> _pages = [
-    const UpdatesPage(),
+    const NewsEventsScreen(),
     ContactsPage(),
     const ComplaintListPage(),
   ];

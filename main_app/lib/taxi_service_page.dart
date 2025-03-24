@@ -4,6 +4,9 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'NoInternetComponent/Utils/network_utils.dart';
 
+// ADD THIS IMPORT:
+import 'package:url_launcher/url_launcher.dart';
+
 class TaxiServicePage extends StatefulWidget {
   const TaxiServicePage({super.key});
 
@@ -68,10 +71,20 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
     });
   }
 
-  void _bookDriver(Map<String, dynamic> driver) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('You have booked ${driver['name']}')),
+  // REPLACE THE OLD BOOKING LOGIC WITH A PHONE CALL
+  void _bookDriver(Map<String, dynamic> driver) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: driver['phone'],
     );
+    // Attempt to launch the dialer
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not call ${driver['phone']}')),
+      );
+    }
   }
 
   @override
@@ -99,7 +112,6 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
                 },
                 child: const Text('Book Now'),
               ),
-
             const SizedBox(height: 20),
             if (_hasSearched && _availableDrivers.isEmpty)
               const Text('No drivers found'),
@@ -115,15 +127,15 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
                         subtitle: Text(
                           'Phone: ${driver['phone']}\nDistance: ${driver['distance'].toStringAsFixed(2)} meters',
                         ),
+                        // CHANGED "Book" TO "Call Now"
                         trailing: ElevatedButton(
                           onPressed: () {
                             NetworkUtils.checkAndProceed(context, () {
                               _bookDriver(driver);
                             });
                           },
-                          child: const Text('Book'),
+                          child: const Text('Call Now'),
                         ),
-
                       ),
                     );
                   },
