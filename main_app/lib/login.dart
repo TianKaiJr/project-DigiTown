@@ -13,20 +13,37 @@ class LoginPage extends StatelessWidget {
   // Firebase Authentication instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Login function
+  // Login function with email verification check
   void _loginUser(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        UserCredential userCredential =
+            await _auth.signInWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        // Navigate to HomePage on successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) =>  const HomePage()),
-        );
+        final user = userCredential.user;
+        if (user != null) {
+          // Check if the user's email is verified
+          if (!user.emailVerified) {
+            // If not verified, sign out and show a message
+            await _auth.signOut();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  "Account not verified. Please check your email for verification.",
+                ),
+              ),
+            );
+            return;
+          }
+          // If verified, navigate to HomePage on successful login
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Login Failed: ${e.toString()}")),
@@ -89,7 +106,10 @@ class LoginPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.email, color: Colors.purple),
+                              prefixIcon: const Icon(
+                                Icons.email,
+                                color: Colors.purple,
+                              ),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
@@ -115,7 +135,10 @@ class LoginPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.lock, color: Colors.purple),
+                              prefixIcon: const Icon(
+                                Icons.lock,
+                                color: Colors.purple,
+                              ),
                             ),
                             obscureText: true,
                             validator: (value) {
@@ -148,9 +171,10 @@ class LoginPage extends StatelessWidget {
                           // Forgot Password button
                           TextButton(
                             onPressed: () {
-                              // Handle forgot password
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Forgot Password functionality not implemented")),
+                                const SnackBar(
+                                  content: Text("Forgot Password functionality not implemented"),
+                                ),
                               );
                             },
                             child: const Text(
@@ -158,6 +182,7 @@ class LoginPage extends StatelessWidget {
                               style: TextStyle(color: Colors.purple),
                             ),
                           ),
+                          // Navigate to Register Page
                           TextButton(
                             onPressed: () {
                               Navigator.push(
@@ -166,7 +191,7 @@ class LoginPage extends StatelessWidget {
                               );
                             },
                             child: const Text(
-                              'Don\'t have an account? Register',
+                              "Don't have an account? Register",
                               style: TextStyle(color: Colors.purple),
                             ),
                           ),

@@ -3,6 +3,8 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  app_links
+  charset_converter
   cloud_firestore
   file_selector_windows
   firebase_auth

@@ -7,10 +7,8 @@ import 'package:intl/intl.dart';
 // For PDF generation
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-// For Razorpay payments
-import 'package:razorpay_flutter/razorpay_flutter.dart';
-
-import 'ticket_preview.dart';  // <-- Import your second file
+// We'll navigate to TicketPreviewPage
+import 'ticket_preview.dart';  // <-- Import the second file
 import 'smsservice.dart';
 
 class BookingAppointment extends StatefulWidget {
@@ -47,30 +45,21 @@ class _BookingAppointmentState extends State<BookingAppointment> {
   // Availability
   Map<DateTime, bool> _availability = {};
   DateTime? _selectedDate;
+
   StreamSubscription<DocumentSnapshot>? _availabilitySubscription;
 
-  // Hospital Price
+  // ================== ADDED: Hospital Price Variable ==================
   double _hospitalPrice = 0.0;
-
-  // Razorpay instance
-  late Razorpay _razorpay;
 
   @override
   void initState() {
     super.initState();
     _fetchHospitalPrice(); // Fetch price as soon as this screen initializes
-
-    // Initialize Razorpay and set up event handlers.
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
   @override
   void dispose() {
     _availabilitySubscription?.cancel();
-    _razorpay.clear();
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
@@ -79,28 +68,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     super.dispose();
   }
 
-  // -------------------- Razorpay Event Handlers --------------------
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    debugPrint("Payment Successful: ${response.paymentId}");
-    _submitAppointment();
-  }
-
-  void _handlePaymentError(PaymentFailureResponse response) {
-    debugPrint("Payment Error: ${response.code} | ${response.message}");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Payment failed: ${response.message}")),
-    );
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    debugPrint("External Wallet: ${response.walletName}");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("External wallet selected: ${response.walletName}")),
-    );
-  }
-  // -------------------- End Razorpay Handlers --------------------
-
-  // ================== 1) Fetch Hospital Price ==================
+  // ================== ADDED: Fetch Hospital Price ==================
   Future<void> _fetchHospitalPrice() async {
     try {
       final docSnapshot = await FirebaseFirestore.instance
@@ -122,7 +90,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     }
   }
 
-  // ================== 2) Department Dropdown ==================
+  // ================== Department Dropdown ==================
   Widget _buildDepartmentDropdown() {
     return DropdownButtonFormField<String>(
       decoration: const InputDecoration(
@@ -151,7 +119,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     );
   }
 
-  // ================== 3) Doctor Dropdown ==================
+  // ================== Doctor Dropdown ==================
   Widget _buildDoctorDropdown() {
     return DropdownButtonFormField<String>(
       decoration: const InputDecoration(
@@ -178,7 +146,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     );
   }
 
-  // ================== 4) Fetch Doctors ==================
+  // ================== Fetch Doctors ==================
   Future<void> _fetchDoctors() async {
     if (_selectedDepartment == null) return;
 
@@ -197,6 +165,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         _doctorsList = querySnapshot.docs.map((doc) {
           final data = doc.data();
           final doctorName = data['Name'] ?? 'Unnamed Doctor';
+
           return {
             'id':   doc.id,
             'name': doctorName,
@@ -208,7 +177,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     }
   }
 
-  // ================== 5) Subscribe to Availability ==================
+  // ================== Subscribe to Availability ==================
   void _subscribeToAvailability() {
     if (_selectedDoctorId == null) return;
 
@@ -231,27 +200,38 @@ class _BookingAppointmentState extends State<BookingAppointment> {
       }
 
       final Map<DateTime, bool> newAvailability = {};
+
       data.forEach((key, value) {
         if (value is Map<String, dynamic>) {
           final bool? isWorking  = value['value'];
           final int? bookedSlot  = value['booked_slot'];
           final int? maxSlot     = value['max_slot'];
-          if (isWorking == null || bookedSlot == null || maxSlot == null) return;
+
+          if (isWorking == null || bookedSlot == null || maxSlot == null) {
+            return;
+          }
+
           final bool isAvailable = (isWorking && bookedSlot < maxSlot);
+
           try {
             final dateParsed = DateTime.parse(key);
-            final normalized = DateTime(dateParsed.year, dateParsed.month, dateParsed.day);
+            final normalized = DateTime(
+              dateParsed.year,
+              dateParsed.month,
+              dateParsed.day,
+            );
             newAvailability[normalized] = isAvailable;
           } catch (e) {
             debugPrint("Skipping invalid date key '$key': $e");
           }
         }
       });
+
       setState(() => _availability = newAvailability);
     });
   }
 
-  // ================== 6) Date Picker (TableCalendar) ==================
+  // ================== Date Picker (TableCalendar) ==================
   void _selectDate() {
     showDialog(
       context: context,
@@ -264,17 +244,26 @@ class _BookingAppointmentState extends State<BookingAppointment> {
             lastDay: DateTime(2101),
             selectedDayPredicate: (day) => isSameDay(day, _selectedDate),
             onDaySelected: (selectedDay, focusedDay) {
-              final normalized = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+              final normalized = DateTime(
+                selectedDay.year,
+                selectedDay.month,
+                selectedDay.day,
+              );
+
               final bool? isAvailable = _availability[normalized];
               if (isAvailable != true) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Date not available, select another date")),
+                  const SnackBar(
+                    content: Text("Date not available, select another date"),
+                  ),
                 );
                 return;
               }
+
               setState(() {
                 _selectedDate = normalized;
-                _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+                _dateController.text =
+                    DateFormat('yyyy-MM-dd').format(_selectedDate!);
               });
               Navigator.pop(context);
             },
@@ -290,20 +279,26 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 } else {
                   dayColor = Colors.grey[300]!;
                 }
+
                 return Container(
                   margin: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: dayColor,
                   ),
-                  child: Center(child: Text('${date.day}', style: const TextStyle(color: Colors.black))),
+                  child: Center(
+                    child: Text(
+                      '${date.day}',
+                      style: const TextStyle(color: Colors.black),
+                    ),
+                  ),
                 );
               },
             ),
             headerStyle: const HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
-              leftChevronIcon: Icon(Icons.chevron_left, color: Colors.black),
+              leftChevronIcon:  Icon(Icons.chevron_left, color: Colors.black),
               rightChevronIcon: Icon(Icons.chevron_right, color: Colors.black),
             ),
           ),
@@ -312,7 +307,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     );
   }
 
-  // ================== 7) Show Custom Payment Bottom Sheet ==================
+  // ================== Show Custom Payment Bottom Sheet ==================
   void _showCustomPaymentSheet() {
     showModalBottomSheet(
       context: context,
@@ -321,7 +316,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
       enableDrag: true,
       builder: (BuildContext context) {
         return Container(
-          height: 300,
+          height: 300, // Same height as before
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
@@ -333,7 +328,8 @@ class _BookingAppointmentState extends State<BookingAppointment> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 8),
-              // Drag handle at top center
+
+              // Drag handle at top center (unchanged)
               Center(
                 child: Container(
                   width: 40,
@@ -345,17 +341,21 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 ),
               ),
               const SizedBox(height: 8),
-              // "quick pay" title and close icon
+
+              // "quick pay" in the center, (x) close on the right
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: SizedBox(
-                  height: 24,
+                  height: 24, // Enough height to hold text + icon
                   child: Stack(
                     children: [
-                      const Center(
+                      Center(
                         child: Text(
                           "quick pay",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       Positioned(
@@ -370,7 +370,8 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Amount payable and hospital name display
+
+              // Box with "amount payable" (left), "₹<price>" (right), hospital name with booking, divider, GPay row
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.all(16),
@@ -382,32 +383,49 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Row: "amount payable" (left) and the fetched price (right)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
                           "amount payable",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         Text(
                           "₹${_hospitalPrice.toStringAsFixed(2)}",
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
+
+                    // Display hospital name with booking
                     Text(
                       "${widget.hospitalName} · booking",
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
                     ),
                     const SizedBox(height: 8),
+
+                    // Divider line (extended via Row + Expanded)
                     Row(
                       children: const [
-                        Expanded(child: Divider(color: Colors.grey, height: 1)),
+                        Expanded(
+                          child: Divider(color: Colors.grey, height: 1),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    // Display Google Pay icon (left unchanged for now)
+
+                    // Google Pay UPI row with bold text
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -418,7 +436,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          "Google Pay ",
+                          "Google Pay UPI",
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -426,8 +444,10 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                   ],
                 ),
               ),
+
               const Spacer(),
-              // PAY NOW button
+
+              // Black PAY NOW button with inwards padding + slight corner radius
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: SizedBox(
@@ -435,10 +455,11 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                   child: ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context); // Close the bottom sheet
-                      await _payWithGPay();   // Initiate Razorpay payment flow
+                      await _payWithGPay();   // Initiate GPay payment flow
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
+                      // Slightly curved corners
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -454,7 +475,10 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                               alignment: PlaceholderAlignment.middle,
                               child: Text(
                                 "●",
-                                style: TextStyle(fontSize: 6, fontWeight: FontWeight.w300),
+                                style: const TextStyle(
+                                  fontSize: 6,
+                                  fontWeight: FontWeight.w300,
+                                ),
                               ),
                             ),
                             const TextSpan(text: " PAY NOW"),
@@ -465,9 +489,10 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                   ),
                 ),
               ),
+
               TextButton(
                 onPressed: () {
-                  // Handle additional payment options if needed.
+                  // If you want to show more payment options, handle here.
                 },
                 child: const Text(
                   "VIEW ALL PAYMENT OPTIONS",
@@ -482,39 +507,21 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     );
   }
 
-  // ================== 8) Razorpay Payment Integration ==================
+  // ================== GPay Payment Flow Stub ==================
   Future<void> _payWithGPay() async {
-    // Replace these placeholders with your actual Razorpay credentials/details:
-    const String razorpayKey = "YOUR_RAZORPAY_KEY"; // Replace with your Razorpay Key
-    // Amount in paise (multiply your rupees by 100)
-    int amountInPaise = (_hospitalPrice * 100).toInt();
-
-    var options = {
-      'key': razorpayKey,
-      'amount': amountInPaise, // Amount in paise
-      'name': 'Hospital Payment', // Your merchant name
-      'description': 'Booking Payment',
-      'prefill': {
-        'contact': _phoneController.text,
-        'email': '', // Optionally add prefill email if available
-      },
-      'external': {
-        'wallets': ['paytm']
-      }
-    };
-
     try {
-      _razorpay.open(options);
-      // The payment event handlers (_handlePaymentSuccess, etc.) will manage the result.
+      // TODO: Integrate your actual Google Pay logic here.
+      // For now, we'll assume payment is successful and call _submitAppointment().
+      await _submitAppointment();
     } catch (e) {
-      debugPrint("Razorpay Payment error: $e");
+      debugPrint("Payment error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Payment error: $e")),
+        SnackBar(content: Text("Payment failed: $e")),
       );
     }
   }
 
-  // ================== 9) Submit Appointment to Firestore ==================
+  // ================== Submit Appointment ==================
   Future<void> _submitAppointment() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null) {
@@ -531,10 +538,12 @@ class _BookingAppointmentState extends State<BookingAppointment> {
       final doctorRef = FirebaseFirestore.instance
           .collection('Doctors_LTA')
           .doc(_selectedDoctorId);
+
       final year  = _selectedDate!.year.toString().padLeft(4, '0');
       final month = _selectedDate!.month.toString().padLeft(2, '0');
       final day   = _selectedDate!.day.toString().padLeft(2, '0');
-      final dateKey = "$year-$month-${day}T00:00:00";
+      final dateKey = "${year}-${month}-${day}T00:00:00";
+
       int? finalBookedSlot;
 
       await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -542,29 +551,40 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         if (!freshSnap.exists) {
           throw Exception("Doctor's availability doc not found.");
         }
+
         final docData = Map<String, dynamic>.from(freshSnap.data()!);
+
         if (!docData.containsKey(dateKey)) {
           throw Exception("Selected date is not available in doc.");
         }
+
         final dateMapRaw = docData[dateKey];
         if (dateMapRaw is! Map<String, dynamic>) {
           throw Exception("Date map is invalid.");
         }
+
         final dateMap = Map<String, dynamic>.from(dateMapRaw);
+
         final bool? isWorking = dateMap['value'];
         final int bookedSlot  = dateMap['booked_slot'] ?? 0;
         final int maxSlot     = dateMap['max_slot'] ?? 0;
+
         if (isWorking != true || bookedSlot >= maxSlot) {
           throw Exception("No slots available for this date.");
         }
+
         final updatedBooked = bookedSlot + 1;
         dateMap['booked_slot'] = updatedBooked;
+
         finalBookedSlot = updatedBooked;
+
         docData[dateKey] = dateMap;
         transaction.update(doctorRef, docData);
+
         final appointmentRef = FirebaseFirestore.instance
             .collection('Hospital_Appointments')
             .doc();
+
         transaction.set(appointmentRef, {
           'patientName': _nameController.text,
           'phoneNumber': _phoneController.text,
@@ -583,7 +603,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         const SnackBar(content: Text("Appointment booked successfully!")),
       );
 
-      // --- SMS Service (optional) ---
+      // --- SMS Service Addition Start ---
       String phoneNumber = _phoneController.text.trim();
       if (!phoneNumber.startsWith("+91")) {
         phoneNumber = "+91" + phoneNumber;
@@ -593,9 +613,8 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         phoneNumber,
         "Dear ${_nameController.text}, your appointment with Dr. $doctorName at ${widget.hospitalName} is confirmed for ${_dateController.text}. Your token no is ${finalBookedSlot ?? 0}. For any queries, contact us. Thank you!"
       );
-      // --- End of SMS Service ---
+      // --- SMS Service Addition End ---
 
-      // Generate PDF slip
       final pdfBytes = await _createPdfSlip(
         tokenNumber: finalBookedSlot ?? 0,
         patientName: _nameController.text,
@@ -607,7 +626,6 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         dateString: _dateController.text,
       );
 
-      // Navigate to ticket preview page
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -633,7 +651,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     }
   }
 
-  // ================== 10) Create PDF Slip ==================
+  // ================== Create PDF Slip (just bytes) ==================
   Future<Uint8List> _createPdfSlip({
     required int tokenNumber,
     required String patientName,
@@ -645,6 +663,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     required String dateString,
   }) async {
     final pdf = pw.Document();
+
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
@@ -654,11 +673,17 @@ class _BookingAppointmentState extends State<BookingAppointment> {
               pw.Center(
                 child: pw.Text(
                   hospitalName,
-                  style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(
+                    fontSize: 16, 
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                 ),
               ),
               pw.Center(
-                child: pw.Text("Appointment Slip - Generated from Web Portal", style: pw.TextStyle(fontSize: 12)),
+                child: pw.Text(
+                  "Appointment Slip - Generated from Web Portal",
+                  style: pw.TextStyle(fontSize: 12),
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Divider(),
@@ -673,8 +698,11 @@ class _BookingAppointmentState extends State<BookingAppointment> {
               pw.Text("Doctor: $doctorName", style: pw.TextStyle(fontSize: 12)),
               pw.Text("Appointment Date: $dateString", style: pw.TextStyle(fontSize: 12)),
               pw.SizedBox(height: 10),
-              pw.Text("Disclaimer: This is an online generated token slip. Appointment will be subjected to the availability of doctor.",
-                  style: pw.TextStyle(fontSize: 10, fontStyle: pw.FontStyle.italic)),
+              pw.Text(
+                "Disclaimer: This is an online generated token slip. "
+                "Appointment will be subjected to the availability of doctor.",
+                style: pw.TextStyle(fontSize: 10, fontStyle: pw.FontStyle.italic),
+              ),
               pw.SizedBox(height: 20),
               pw.Center(
                 child: pw.BarcodeWidget(
@@ -685,16 +713,19 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 ),
               ),
               pw.SizedBox(height: 10),
-              pw.Center(child: pw.Text("Scan for Hospital Address", style: pw.TextStyle(fontSize: 10))),
+              pw.Center(
+                child: pw.Text("Scan for Hospital Address", style: pw.TextStyle(fontSize: 10)),
+              ),
             ],
           );
         },
       ),
     );
+
     return pdf.save();
   }
 
-  // ================== 11) Helper: Build TextField ==================
+  // ================== Helper: Build TextField ==================
   Widget _buildTextField(
     String label,
     TextEditingController controller, {
@@ -721,7 +752,6 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     );
   }
 
-  // ================== 12) Build Method ==================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -786,7 +816,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                   validator: (_) => null,
                 ),
                 const SizedBox(height: 16),
-                // Book Now button triggers the custom bottom sheet
+                // Book Now button triggers the custom bottom sheet with payment options
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

@@ -11,6 +11,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // For Android, webview_flutter 4.10.0 automatically selects the correct implementation,
+  // so you don't need to set WebView.platform manually.
+
   runApp(const MyApp());
 }
 
@@ -23,9 +26,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         'x': (context) => const ProfilePage(),
-        'y': (context) => const BookingAppointment(hospitalId: '',
-    hospitalName: '',
-    departments: [],),
+        'y': (context) => const BookingAppointment(
+              hospitalId: '',
+              hospitalName: '',
+              departments: [],
+            ),
       },
       title: 'Login',
       home: const AuthWrapper(),
@@ -38,22 +43,20 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if the user is logged in by listening to Firebase auth state changes
+    // Listen to Firebase auth state changes
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // While the connection is loading, show a loading indicator
+        // Show a loading indicator while waiting
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        
-        // If the user is authenticated, navigate to the profile page (or any other page)
+        // If the user is authenticated, navigate to your landing page (adjust as needed)
         if (snapshot.hasData) {
-          return LoginPage();  // Adjust to your authenticated landing page
+          return LoginPage();
         }
-        
-        // If the user is not authenticated, navigate to the login page
-        return LoginPage();  // Adjust to your login page
+        // Otherwise, show the login page
+        return LoginPage();
       },
     );
   }

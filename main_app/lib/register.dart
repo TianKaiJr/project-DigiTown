@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'PolicyWebViewPage.dart';  // Import the PolicyPage for displaying policies
 
 class RegisterPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -15,37 +16,151 @@ class RegisterPage extends StatelessWidget {
 
   RegisterPage({super.key});
 
-  // Register function
+  void _showPoliciesDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // force user to tap a button
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text("Terms, Privacy, and Refund Policy"),
+          content: RichText(
+            text: TextSpan(
+              style: const TextStyle(color: Colors.black87),
+              children: [
+                const TextSpan(
+                  text: "By clicking continue, you agree to our ",
+                ),
+                // Terms link
+                TextSpan(
+                  text: "Terms and Conditions",
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      print("Terms tapped");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PolicyPage(
+                            title: "Terms and Conditions",
+                            assetPath: "assets/docs/Terms And Conditions.htm",
+                          ),
+                        ),
+                      );
+                    },
+                ),
+                const TextSpan(text: ", "),
+                // Privacy link
+                TextSpan(
+                  text: "Privacy Policy",
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      print("Privacy tapped");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PolicyPage(
+                            title: "Privacy Policy",
+                            assetPath: "assets/docs/Privacy Policy.htm",
+                          ),
+                        ),
+                      );
+                    },
+                ),
+                const TextSpan(text: ", and "),
+                // Refund link
+                TextSpan(
+                  text: "Refund Policy",
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      print("Refund tapped");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PolicyPage(
+                            title: "Refund Policy",
+                            assetPath: "assets/docs/Refund Policy.htm",
+                          ),
+                        ),
+                      );
+                    },
+                ),
+                const TextSpan(
+                  text:
+                      ". You must review these documents before continuing.",
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx); // close dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);  // close dialog
+                _registerUser(context); // proceed with registration
+              },
+              child: const Text("Continue"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _registerUser(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Register user with Firebase Authentication
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        // Create user with Firebase Authentication
+        final userCredential = await _auth.createUserWithEmailAndPassword(
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
 
-        User? user = userCredential.user;
-
+        final user = userCredential.user;
         if (user != null) {
-          // Save user data to Firestore
+          // Send email verification
+          await user.sendEmailVerification();
+
+          // Save user data to Firestore (initially, mark email as not verified)
           await _firestore.collection('Users').doc(user.uid).set({
             'name': nameController.text.trim(),
             'email': emailController.text.trim(),
             'createdAt': FieldValue.serverTimestamp(),
+            'emailVerified': false,
           });
 
-          // Show success message
+          // Sign out the user immediately so they can't log in before verification
+          await _auth.signOut();
+
+          // Inform the user to check their email for verification
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Account created successfully!')),
+            const SnackBar(
+              content: Text(
+                'Account created successfully! Your account is not verified. Please check your email for verification before logging in.',
+              ),
+            ),
           );
 
-          // Navigate back to login
-          Navigator.pop(context);
+          Navigator.pop(context); // Navigate back to login screen
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Registration Failed: ${e.toString()}")),
+          SnackBar(content: Text("Registration Failed: $e")),
         );
       }
     }
@@ -83,7 +198,6 @@ class RegisterPage extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Title
                           Text(
                             'Create an Account',
                             style: TextStyle(
@@ -105,7 +219,8 @@ class RegisterPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.person, color: Colors.red),
+                              prefixIcon:
+                                  const Icon(Icons.person, color: Colors.red),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -127,14 +242,16 @@ class RegisterPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.email, color: Colors.red),
+                              prefixIcon:
+                                  const Icon(Icons.email, color: Colors.red),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                              if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                  .hasMatch(value)) {
                                 return 'Please enter a valid email';
                               }
                               return null;
@@ -153,7 +270,8 @@ class RegisterPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon: const Icon(Icons.lock, color: Colors.red),
+                              prefixIcon:
+                                  const Icon(Icons.lock, color: Colors.red),
                             ),
                             obscureText: true,
                             validator: (value) {
@@ -167,9 +285,11 @@ class RegisterPage extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 24),
-                          // Register button
+                          // REGISTER button: Show policies dialog first.
                           ElevatedButton(
-                            onPressed: () => _registerUser(context),
+                            onPressed: () {
+                              _showPoliciesDialog(context);
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               shape: RoundedRectangleBorder(
@@ -183,7 +303,7 @@ class RegisterPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          // Back to Login button
+                          // Back to Login button.
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);

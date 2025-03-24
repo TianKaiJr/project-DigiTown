@@ -3,7 +3,9 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  charset_converter
   file_selector_linux
+  gtk
   printing
   url_launcher_linux
 )
