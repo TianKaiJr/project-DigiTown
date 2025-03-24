@@ -3,18 +3,30 @@ import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'PolicyWebViewPage.dart';  // Import the PolicyPage for displaying policies
+import 'NoInternetComponent/Utils/network_utils.dart';
 
-class RegisterPage extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-
-  // Firebase instances
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class RegisterPage extends StatefulWidget {
 
   RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController nameController = TextEditingController();
+
+  final TextEditingController emailController = TextEditingController();
+
+  final TextEditingController passwordController = TextEditingController();
+
+  bool _isObscure = true; 
+ // Track password visibility
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void _showPoliciesDialog(BuildContext context) {
     showDialog(
@@ -259,6 +271,8 @@ class RegisterPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           // Password input
+                          
+
                           TextFormField(
                             controller: passwordController,
                             decoration: InputDecoration(
@@ -270,10 +284,17 @@ class RegisterPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
-                              prefixIcon:
-                                  const Icon(Icons.lock, color: Colors.red),
+                              prefixIcon: const Icon(Icons.lock, color: Colors.red),
+                              suffixIcon: IconButton(
+                                icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    _isObscure = !_isObscure; // Toggle password visibility
+                                  });
+                                },
+                              ),
                             ),
-                            obscureText: true,
+                            obscureText: _isObscure, // Use the visibility toggle state
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your password';
@@ -284,23 +305,26 @@ class RegisterPage extends StatelessWidget {
                               return null;
                             },
                           ),
+
                           const SizedBox(height: 24),
                           // REGISTER button: Show policies dialog first.
                           ElevatedButton(
                             onPressed: () {
-                              _showPoliciesDialog(context);
+                              NetworkUtils.checkAndProceed(context, () {
+                                _showPoliciesDialog(context);
+                              });
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                               minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              minimumSize: const Size(double.infinity, 50),
                             ),
                             child: const Text(
                               'REGISTER',
                               style: TextStyle(fontSize: 18, color: Colors.white),
-                              ),
+                            ),
                           ),
                           const SizedBox(height: 16),
                           // Back to Login button.
