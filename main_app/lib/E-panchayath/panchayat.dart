@@ -2,6 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'complaint_page.dart';
 import 'contact_page.dart';
+import 'updates_page.dart';
 
 
 
@@ -47,11 +48,5 @@ class _PanchayatPageState extends State<PanchayatPage> {
   }
 }
 
-class UpdatesPage extends StatelessWidget {
-  const UpdatesPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text("Updates Page", style: TextStyle(fontSize: 20, color: Colors.white)));
-  }
-}
+
 

@@ -72,9 +72,9 @@ class ContactUsPage extends StatelessWidget {
             // ---------------------
             // Email + Location info
             // ---------------------
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(Icons.email, color: Colors.black87),
                 SizedBox(width: 8),
                 Text(
@@ -87,9 +87,9 @@ class ContactUsPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(Icons.location_on, color: Colors.black87),
                 SizedBox(width: 8),
                 Text(
@@ -113,9 +113,9 @@ class ContactUsPage extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12.0),
                 ),
-                child: Column(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Icon(
                       Icons.email,
                       size: 36,
@@ -184,7 +184,7 @@ class MyDrawer extends StatelessWidget {
           children: [
             const SizedBox(height: 60),
             // Example of a custom "profile" icon at the top
-            Center(
+            const Center(
               child: CircleAvatar(
                 radius: 40,
                 backgroundColor: Colors.white,

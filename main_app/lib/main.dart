@@ -1,7 +1,9 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:main_app/firebase_options.dart';
+import 'package:main_app/home.dart';
 import 'booking_appoinment.dart';
 import 'profile_page.dart';
 import 'login.dart';
@@ -24,6 +26,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      //theme: FlexThemeData.light(scheme: FlexScheme.barossa),
+      //darkTheme: FlexThemeData.dark(scheme: FlexScheme.barossa),
+      //themeMode: ThemeMode.system,
       routes: {
         'x': (context) => const ProfilePage(),
         'y': (context) => const BookingAppointment(
@@ -53,7 +58,7 @@ class AuthWrapper extends StatelessWidget {
         }
         // If the user is authenticated, navigate to your landing page (adjust as needed)
         if (snapshot.hasData) {
-          return LoginPage();
+          return const HomePage();
         }
         // Otherwise, show the login page
         return LoginPage();
