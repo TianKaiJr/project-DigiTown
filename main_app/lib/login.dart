@@ -5,12 +5,22 @@ import 'register.dart';
 import 'NoInternetComponent/Utils/network_utils.dart';
 
 
-class LoginPage extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+class LoginPage extends StatefulWidget {
 
   LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController emailController = TextEditingController();
+
+  final TextEditingController passwordController = TextEditingController();
+
+   bool _isObscure = true;
 
   // Firebase Authentication instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -126,6 +136,8 @@ class LoginPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           // Password input
+                         
+
                           TextFormField(
                             controller: passwordController,
                             decoration: InputDecoration(
@@ -141,8 +153,17 @@ class LoginPage extends StatelessWidget {
                                 Icons.lock,
                                 color: Colors.purple,
                               ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscure ? Icons.visibility_off : Icons.visibility,
+                                  color: Colors.purple,
+                                ),
+                                onPressed: () {
+                                  _isObscure = !_isObscure;
+                                },
+                              ),
                             ),
-                            obscureText: true,
+                            obscureText: _isObscure,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your password';
@@ -153,6 +174,7 @@ class LoginPage extends StatelessWidget {
                               return null;
                             },
                           ),
+
                           const SizedBox(height: 24),
                           // Sign-in button
                           ElevatedButton(
