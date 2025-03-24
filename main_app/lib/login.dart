@@ -159,7 +159,9 @@ class _LoginPageState extends State<LoginPage> {
                                   color: Colors.purple,
                                 ),
                                 onPressed: () {
-                                  _isObscure = !_isObscure;
+                                  setState(() {
+                                    _isObscure = !_isObscure; 
+                                  });
                                 },
                               ),
                             ),
