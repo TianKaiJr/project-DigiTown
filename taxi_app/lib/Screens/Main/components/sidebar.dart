@@ -21,27 +21,27 @@ class SideBar extends StatelessWidget {
               ),
             ),
           ),
-          ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Section 1'),
-            onTap: () {
-              Navigator.pop(context);
-              // Add your action here
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Section 2'),
-            onTap: () {
-              Navigator.pop(context);
-              // Add your action here
-            },
-          ),
+          // ListTile(
+          //   leading: Icon(Icons.home),
+          //   title: Text('Section 1'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     // Add your action here
+          //   },
+          // ),
+          // ListTile(
+          //   leading: Icon(Icons.settings),
+          //   title: Text('Section 2'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //     // Add your action here
+          //   },
+          // ),
           ListTile(
             leading: Icon(Icons.logout),
             title: Text('Log Out'),
             onTap: () {
-              Navigator.pushNamed(context, 'logout');
+              Navigator.pushNamed(context, '/logout');
             },
           ),
         ],

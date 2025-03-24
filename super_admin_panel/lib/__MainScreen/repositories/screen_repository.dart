@@ -13,7 +13,7 @@ import '../models/screen_model.dart';
 class ScreenRepository {
   List<ScreenModel> getScreens() {
     return [
-      ScreenModel(title: "Dashboard", screen: const DashboardScreen()),
+      // ScreenModel(title: "Dashboard", screen: const DashboardScreen()),
       ScreenModel(title: "Admin Manager", screen: const AdminManagerScreen()),
       ScreenModel(title: "Panchayat", screen: const PanchayatScreen()),
       ScreenModel(title: "Hospital", screen: const HospitalScreen()),
@@ -28,7 +28,7 @@ class ScreenRepository {
 
   List<String> getMenuTitles() {
     return [
-      "Dashboard",
+      // "Dashboard",
       "Admin Manager",
       "Panchayat",
       "Hospital",
