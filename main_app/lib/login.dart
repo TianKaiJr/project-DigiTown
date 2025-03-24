@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
 import 'register.dart';
+import 'NoInternetComponent/Utils/network_utils.dart';
+
 
 class LoginPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -154,7 +156,11 @@ class LoginPage extends StatelessWidget {
                           const SizedBox(height: 24),
                           // Sign-in button
                           ElevatedButton(
-                            onPressed: () => _loginUser(context),
+                            onPressed: () {
+                              NetworkUtils.checkAndProceed(context, () {
+                                _loginUser(context);
+                              });
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.purple,
                               shape: RoundedRectangleBorder(
@@ -164,9 +170,10 @@ class LoginPage extends StatelessWidget {
                             ),
                             child: const Text(
                               'SIGN IN',
-                              style: TextStyle(fontSize: 18, color: Colors.white),
+                            style: TextStyle(fontSize: 18, color: Colors.white),
                             ),
                           ),
+
                           const SizedBox(height: 16),
                           // Forgot Password button
                           TextButton(
@@ -185,10 +192,12 @@ class LoginPage extends StatelessWidget {
                           // Navigate to Register Page
                           TextButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => RegisterPage()),
-                              );
+                              NetworkUtils.checkAndProceed(context, () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => RegisterPage()),
+                                );
+                              });
                             },
                             child: const Text(
                               "Don't have an account? Register",

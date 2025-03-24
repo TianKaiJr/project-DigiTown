@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 class TaxiServicePage extends StatefulWidget {
   const TaxiServicePage({super.key});
@@ -91,9 +92,14 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
             const SizedBox(height: 20),
             if (_showBookNow)
               ElevatedButton(
-                onPressed: _getUserLocation,
+                onPressed: () {
+                  NetworkUtils.checkAndProceed(context, () {
+                    _getUserLocation();
+                  });
+                },
                 child: const Text('Book Now'),
               ),
+
             const SizedBox(height: 20),
             if (_hasSearched && _availableDrivers.isEmpty)
               const Text('No drivers found'),
@@ -110,9 +116,14 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
                           'Phone: ${driver['phone']}\nDistance: ${driver['distance'].toStringAsFixed(2)} meters',
                         ),
                         trailing: ElevatedButton(
-                          onPressed: () => _bookDriver(driver),
+                          onPressed: () {
+                            NetworkUtils.checkAndProceed(context, () {
+                              _bookDriver(driver);
+                            });
+                          },
                           child: const Text('Book'),
                         ),
+
                       ),
                     );
                   },

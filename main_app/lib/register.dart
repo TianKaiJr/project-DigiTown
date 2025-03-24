@@ -292,15 +292,15 @@ class RegisterPage extends StatelessWidget {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              minimumSize: const Size(double.infinity, 50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                               minimumSize: const Size(double.infinity, 50),
                             ),
                             child: const Text(
                               'REGISTER',
                               style: TextStyle(fontSize: 18, color: Colors.white),
-                            ),
+                              ),
                           ),
                           const SizedBox(height: 16),
                           // Back to Login button.

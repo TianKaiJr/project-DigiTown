@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:main_app/components/custom_IconButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'booking_appoinment.dart';
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 class HospitalPage extends StatefulWidget {
   const HospitalPage({Key? key}) : super(key: key);
@@ -191,7 +193,7 @@ class _HospitalPageState extends State<HospitalPage> {
                     ),
 
                     /// Book Now Button
-                    ElevatedButton(
+                  ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         textStyle: const TextStyle(fontSize: 12),
@@ -220,9 +222,14 @@ class _HospitalPageState extends State<HospitalPage> {
                     /// Location Icon
                     IconButton(
                       icon: const Icon(Icons.map, size: 20, color: Colors.blue),
-                      onPressed: () => _launchMaps(hospital['address'] ?? ''),
+                        onPressed: () {
+                          NetworkUtils.checkAndProceed(context, () {
+                            _launchMaps(hospital['address'] ?? '');
+                          });
+                        },
                       tooltip: 'Location',
                     ),
+
 
                     /// Facilities Icon
                     IconButton(
@@ -252,8 +259,11 @@ class _HospitalPageState extends State<HospitalPage> {
               title: const Text('Find Nearby Hospitals'),
               trailing: const Icon(Icons.map, color: Colors.blue),
               onTap: () {
-                _launchMaps('hospitals near me');
+                NetworkUtils.checkAndProceed(context, () {
+                  _launchMaps('hospitals near me');
+                });
               },
+
             ),
           ),
 

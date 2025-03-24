@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 class BloodPage extends StatelessWidget {
   const BloodPage({super.key});
@@ -29,7 +30,9 @@ class BloodPage extends StatelessWidget {
               },
               child: const Text("Register to Donate Blood"),
             ),
+
             const SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -39,6 +42,8 @@ class BloodPage extends StatelessWidget {
               },
               child: const Text("Request for Blood"),
             ),
+
+
           ],
         ),
       ),
@@ -99,14 +104,17 @@ class _RegisterBloodDonationState extends State<RegisterBloodDonation> {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Thank you for registering to donate blood!")),
-              );
+              NetworkUtils.checkAndProceed(context, () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Thank you for registering to donate blood!")),
+                );
               // Add logic for final submission to backend or database here
+              });
             },
             child: const Text("Agree"),
           ),
+
         ],
       ),
     );
@@ -179,9 +187,12 @@ class _RegisterBloodDonationState extends State<RegisterBloodDonation> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _showConfirmationDialog,
+              onPressed: () {
+                NetworkUtils.checkAndProceed(context, _showConfirmationDialog);
+              },
               child: const Text("Submit"),
             ),
+
           ],
         ),
       ),
@@ -313,9 +324,12 @@ class _RequestBloodState extends State<RequestBlood> {
 
             // Search button
             ElevatedButton(
-              onPressed: _searchDonors,
+              onPressed: () {
+                NetworkUtils.checkAndProceed(context, _searchDonors);
+              },
               child: const Text("Search Donors"),
             ),
+
             const SizedBox(height: 16),
 
             // Display matched donors

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:math'; // For min()
+import 'NoInternetComponent/Utils/network_utils.dart';
 
 void main() {
   runApp(const MyApp());
@@ -446,11 +447,20 @@ class _BusSearchPageState extends State<BusServicePage> {
                       Row(
                         children: [
                           TextButton(
-                            onPressed: () => _chooseTodayOrTomorrow(true),
+                            onPressed: () {
+                              NetworkUtils.checkAndProceed(context, () {
+                                 _chooseTodayOrTomorrow(true);
+                              });
+                            },
                             child: const Text("Today"),
                           ),
+
                           TextButton(
-                            onPressed: () => _chooseTodayOrTomorrow(false),
+                            onPressed: () {
+                              NetworkUtils.checkAndProceed(context, () {
+                                _chooseTodayOrTomorrow(false);
+                              });
+                            },
                             child: const Text("Tomorrow"),
                           ),
                         ],
@@ -480,9 +490,11 @@ class _BusSearchPageState extends State<BusServicePage> {
                           ),
                         ],
                         onChanged: (value) {
-                          setState(() {
-                            _sortOption = value!;
-                            _sortResultsInMemory();
+                          NetworkUtils.checkAndProceed(context, () {
+                            setState(() {
+                              _sortOption = value!;
+                              _sortResultsInMemory();
+                            });
                           });
                         },
                       ),
@@ -495,21 +507,23 @@ class _BusSearchPageState extends State<BusServicePage> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: searchBuses,
+                      onPressed: () {
+                        NetworkUtils.checkAndProceed(context, searchBuses);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                      child: const Text(
-                        "SEARCH BUSES",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                     child: const Text(
+                      "SEARCH BUSES",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  )
                   ),
                   const SizedBox(height: 16),
 
