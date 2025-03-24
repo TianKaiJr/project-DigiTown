@@ -4,7 +4,6 @@ import 'package:super_admin_panel/_Panchayat_Module/views/panchayat_screen.dart'
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_screen.dart';
 import 'package:super_admin_panel/_Transport_Module/transport_service_screen.dart';
 import 'package:super_admin_panel/__AdminManager/admin_manager.dart';
-import 'package:super_admin_panel/__Dashboard/dashboard.dart';
 import 'package:super_admin_panel/__Profile/profile_page.dart';
 import 'package:super_admin_panel/__Settings/settings_page.dart';
 
