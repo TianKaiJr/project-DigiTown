@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_repository.dart';
 import 'package:super_admin_panel/_BloodBank_Module/blood_donation_view_model.dart';
@@ -29,6 +30,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await dotenv.load(fileName: ".env");
   runApp(const RestartWidget(child: MyApp()));
 }
 

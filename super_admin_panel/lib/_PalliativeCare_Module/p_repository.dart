@@ -8,6 +8,12 @@ class PalliativeServiceRepository {
           id: 'appointments',
           title: "Appointments",
           icon: Icons.calendar_today),
+      PalliativeServiceOptionModel(
+          id: 'drugbank',
+          title: "Medicine Usage Finder",
+          icon: Icons.calendar_today),
+      PalliativeServiceOptionModel(
+          id: 'healthnews', title: "Health News", icon: Icons.calendar_today),
     ];
   }
 }

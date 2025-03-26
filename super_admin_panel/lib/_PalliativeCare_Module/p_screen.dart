@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:super_admin_panel/_PalliativeCare_Module/Drug_Bank/medicine_search_screen.dart';
+import 'package:super_admin_panel/_PalliativeCare_Module/Health_News/health_news_screen.dart';
 import 'package:super_admin_panel/_PalliativeCare_Module/PC_Appointments/pc_appointments.dart';
 import 'package:super_admin_panel/_PalliativeCare_Module/option_box.dart';
 import 'package:super_admin_panel/_PalliativeCare_Module/p_header.dart';
@@ -76,6 +78,10 @@ class PalliativeServiceScreen extends StatelessWidget {
     switch (option) {
       case 'appointments':
         return const PalliativeAppointmentsScreen();
+      case 'drugbank':
+        return MedicineSearchScreen();
+      case 'healthnews':
+        return HealthNewsScreen();
       default:
         return const Center(
           child: Text(
