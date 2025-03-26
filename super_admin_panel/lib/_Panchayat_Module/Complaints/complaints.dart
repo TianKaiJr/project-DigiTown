@@ -43,7 +43,7 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
               String currentStatus = complaint['status'] ?? 'Under Review';
 
               return Card(
-                color: AppPallete.secondaryColor,
+                color: AppPallete.cardColor,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: ListTile(
                   title: Text(complaint['subject'] ?? 'No Subject'),

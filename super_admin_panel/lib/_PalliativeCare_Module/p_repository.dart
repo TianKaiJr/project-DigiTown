@@ -11,9 +11,9 @@ class PalliativeServiceRepository {
       PalliativeServiceOptionModel(
           id: 'drugbank',
           title: "Medicine Usage Finder",
-          icon: Icons.calendar_today),
+          icon: Icons.find_in_page),
       PalliativeServiceOptionModel(
-          id: 'healthnews', title: "Health News", icon: Icons.calendar_today),
+          id: 'healthnews', title: "Health News", icon: Icons.newspaper),
     ];
   }
 }

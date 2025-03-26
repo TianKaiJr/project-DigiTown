@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -60,7 +61,7 @@ class _HealthNewsScreenState extends State<HealthNewsScreen> {
                   itemBuilder: (context, index) {
                     final article = articles[index];
                     return Card(
-                      color: Color.fromARGB(62, 0, 225, 255),
+                      color: AppPallete.cardColor,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
                       elevation: 3,

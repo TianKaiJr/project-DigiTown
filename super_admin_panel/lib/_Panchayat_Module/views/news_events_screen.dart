@@ -78,7 +78,7 @@ class _NewsEventsScreenState extends State<NewsEventsScreen> {
                   margin: const EdgeInsets.symmetric(
                       vertical: 8.0, horizontal: 16.0),
                   decoration: BoxDecoration(
-                    color: AppPallete.primaryColor,
+                    color: AppPallete.cardColor,
                     borderRadius: BorderRadius.circular(16.0),
                   ),
                   child: Padding(
