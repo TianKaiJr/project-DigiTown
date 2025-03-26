@@ -43,6 +43,9 @@ class _DarkLoginScreenState extends State<DarkLoginScreen> {
           .limit(1)
           .get();
 
+      print("Checking Firestore for email: $email");
+      print("Total documents found: ${adminSnapshot.docs.length}");
+
       if (adminSnapshot.docs.isNotEmpty) {
         // Document found. Now, verify role and status.
         var adminDoc = adminSnapshot.docs.first;
@@ -51,7 +54,15 @@ class _DarkLoginScreenState extends State<DarkLoginScreen> {
             ? adminDoc["status"]
             : adminDoc["status"].toString().toLowerCase() == "true";
 
-        if (role == "admin" && status) {
+        const allowedRoles = {
+          "admin",
+          "t_admin",
+          "p_admin",
+          "pc_admin",
+          "h_admin",
+          "bb_admin"
+        };
+        if (allowedRoles.contains(role) && status) {
           // If admin approval is in place, proceed with Firebase Authentication.
           UserCredential userCredential = await FirebaseAuth.instance
               .signInWithEmailAndPassword(email: email, password: password);

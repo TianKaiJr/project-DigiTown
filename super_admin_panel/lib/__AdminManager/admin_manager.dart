@@ -49,6 +49,7 @@ class _AdminManagerScreenState extends State<AdminManagerScreen> {
             .set({
           "email": _emailController.text.trim(),
           "name": _nameController.text.trim(),
+          "password": _passwordController.text.trim(),
           "role": _roleController.text.trim(),
           "status": _status,
           "timestamp": Timestamp.now(),
