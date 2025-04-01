@@ -5,9 +5,9 @@ class SmsService {
 
   SmsService() {
     twilioFlutter = TwilioFlutter(
-      accountSid: 'ACc9a75f905c04243222e29ba4d84a5174',           // Replace with your Account SID
-      authToken: '39c5b631eb606dd8dad00585161b3d77',             // Replace with your Auth Token
-      twilioNumber: '+14255841926', // Replace with your Twilio number
+      accountSid: 'AC700ce6647c2d0e257a4a36718449905b',           // Replace with your Account SID
+      authToken: '87976e827762881c8eb5657a06234ffd',             // Replace with your Auth Token
+      twilioNumber: '+15074364272', // Replace with your Twilio number
     );
   }
 

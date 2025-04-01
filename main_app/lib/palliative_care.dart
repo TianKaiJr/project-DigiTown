@@ -63,6 +63,7 @@ class _PalliativeCarePageState extends State<PalliativeCarePage> {
           'address': _addressController.text,
           'pincode': _pincodeController.text,
           'service': _selectedService,
+          'status': 'Pending',
           'date': _selectedDate?.toIso8601String(),
           'time': _selectedTime?.format(context),
           'timestamp': FieldValue.serverTimestamp(),

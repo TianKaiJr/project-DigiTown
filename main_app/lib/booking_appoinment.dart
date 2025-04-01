@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui'; // For ImageFilter (blur)
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 // For PDF generation
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 // We'll navigate to TicketPreviewPage
 import 'ticket_preview.dart';  // <-- Import the second file
 import 'smsservice.dart';
-import 'NoInternetComponent/Utils/network_utils.dart';
+// ================== ADDED: URL Launcher for Razorpay Link ==================
+import 'package:url_launcher/url_launcher.dart';
+// ================== ADDED: Lottie for Animation ==================
+import 'package:lottie/lottie.dart';
 
 class BookingAppointment extends StatefulWidget {
   final String hospitalId;
@@ -42,6 +45,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
   String? _selectedDepartment;
   List<Map<String, dynamic>> _doctorsList = [];
   String? _selectedDoctorId;
+  String? _selectedDoctorName; // NEW: Store selected doctor's name
 
   // Availability
   Map<DateTime, bool> _availability = {};
@@ -52,6 +56,18 @@ class _BookingAppointmentState extends State<BookingAppointment> {
   // ================== ADDED: Hospital Price Variable ==================
   double _hospitalPrice = 0.0;
 
+  // ================== ADDED: For Listening to Status Changes ==================
+  StreamSubscription<DocumentSnapshot>? _statusSubscription;
+
+  // ================== ADDED: Payment Timeout Timer ==================
+  Timer? _paymentTimer;
+
+  // ================== ADDED: For Payment Animation Control ==================
+  // Notifier to signal when payment is successful
+  final ValueNotifier<bool> _paymentSuccessNotifier = ValueNotifier(false);
+  // Booking id stored to finalize appointment later
+  String? _currentBookingId;
+
   @override
   void initState() {
     super.initState();
@@ -61,11 +77,14 @@ class _BookingAppointmentState extends State<BookingAppointment> {
   @override
   void dispose() {
     _availabilitySubscription?.cancel();
+    _statusSubscription?.cancel();
+    _paymentTimer?.cancel();
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     _reasonController.dispose();
     _dateController.dispose();
+    _paymentSuccessNotifier.dispose();
     super.dispose();
   }
 
@@ -109,6 +128,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         setState(() {
           _selectedDepartment = value;
           _selectedDoctorId   = null;
+          _selectedDoctorName = null; // Reset doctor name on department change
           _doctorsList.clear();
           _selectedDate       = null;
           _dateController.clear();
@@ -135,10 +155,17 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         );
       }).toList(),
       onChanged: (value) {
+        // Set both _selectedDoctorId and _selectedDoctorName dynamically
         setState(() {
           _selectedDoctorId = value;
           _selectedDate     = null;
           _dateController.clear();
+          // Find the doctor name from _doctorsList using the selected id
+          final selectedDoctor = _doctorsList.firstWhere(
+            (doc) => doc['id'] == value,
+            orElse: () => {'name': 'Selected Doctor'},
+          );
+          _selectedDoctorName = selectedDoctor['name'];
         });
         _subscribeToAvailability();
       },
@@ -325,225 +352,289 @@ class _BookingAppointmentState extends State<BookingAppointment> {
               topRight: Radius.circular(16),
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 8),
-
-              // Drag handle at top center (unchanged)
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(2),
+          // Wrap the Column in SingleChildScrollView
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-
-              // "quick pay" in the center, (x) close on the right
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: SizedBox(
-                  height: 24, // Enough height to hold text + icon
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Text(
-                          "quick pay",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: SizedBox(
+                    height: 24,
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Text(
+                            "quick pay",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.close),
+                        Positioned(
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(Icons.close),
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Row: "amount payable" (left) and the fetched price (right)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "amount payable",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            "₹${_hospitalPrice.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "${widget.hospitalName} · booking",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: const [
+                          Expanded(
+                            child: Divider(color: Colors.grey, height: 1),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.payment, size: 24),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Razorpay Payment Link",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // Box with "amount payable" (left), "₹<price>" (right), hospital name with booking, divider, GPay row
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Row: "amount payable" (left) and the fetched price (right)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "amount payable",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                // Replace Spacer() with a fixed SizedBox
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context); // Close the bottom sheet
+                        await _payWithRazorpay(); // Initiate Razorpay link flow with animation
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        Text(
-                          "₹${_hospitalPrice.toStringAsFixed(2)}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Display hospital name with booking
-                    Text(
-                      "${widget.hospitalName} · booking",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Divider line (extended via Row + Expanded)
-                    Row(
-                      children: const [
-                        Expanded(
-                          child: Divider(color: Colors.grey, height: 1),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Google Pay UPI row with bold text
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/icons/gpay_icon.png',
-                          width: 24,
-                          height: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          "Google Pay UPI",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const Spacer(),
-
-              // Black PAY NOW button with inwards padding + slight corner radius
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context); // Close the bottom sheet
-                      await _payWithGPay();   // Initiate GPay payment flow
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      // Slightly curved corners
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: RichText(
-                        text: TextSpan(
-                          style: const TextStyle(fontSize: 16, color: Colors.white),
-                          children: [
-                            TextSpan(text: "₹${_hospitalPrice.toStringAsFixed(2)} "),
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Text(
-                                "●",
-                                style: const TextStyle(
-                                  fontSize: 6,
-                                  fontWeight: FontWeight.w300,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: RichText(
+                          text: TextSpan(
+                            style: const TextStyle(fontSize: 16, color: Colors.white),
+                            children: [
+                              TextSpan(text: "₹${_hospitalPrice.toStringAsFixed(2)} "),
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Text(
+                                  "●",
+                                  style: const TextStyle(
+                                    fontSize: 6,
+                                    fontWeight: FontWeight.w300,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const TextSpan(text: " PAY NOW"),
-                          ],
+                              const TextSpan(text: " PAY NOW"),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-
-              TextButton(
-                onPressed: () {
-                  // If you want to show more payment options, handle here.
-                },
-                child: const Text(
-                  "VIEW ALL PAYMENT OPTIONS",
-                  style: TextStyle(fontSize: 14, color: Colors.blue),
+                TextButton(
+                  onPressed: () {
+                    // If you want to show more payment options, handle here.
+                  },
+                  child: const Text(
+                    "VIEW ALL PAYMENT OPTIONS",
+                    style: TextStyle(fontSize: 14, color: Colors.blue),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  // ================== GPay Payment Flow Stub ==================
-  Future<void> _payWithGPay() async {
-    try {
-      // TODO: Integrate your actual Google Pay logic here.
-      // For now, we'll assume payment is successful and call _submitAppointment().
-      await _submitAppointment();
-    } catch (e) {
-      debugPrint("Payment error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Payment failed: $e")),
-      );
+  // ================== PART A: Create a Pending Doc ==================
+  Future<String> _createPendingBooking() async {
+    final appointmentRef = FirebaseFirestore.instance
+        .collection('Hospital_Appointments')
+        .doc();
+
+    // Convert phone to +91
+    String rawPhone = _phoneController.text.trim();
+    if (!rawPhone.startsWith("+91")) {
+      rawPhone = "+91" + rawPhone;
     }
+
+    await appointmentRef.set({
+      'patientName': _nameController.text,
+      'phoneNumber': rawPhone,
+      'address': _addressController.text,
+      'hospitalId': widget.hospitalId,
+      'hospitalName': widget.hospitalName,
+      'department': _selectedDepartment,
+      'doctorId': _selectedDoctorId,
+      'date': _dateController.text,
+      'reason': _reasonController.text,
+      'createdAt': FieldValue.serverTimestamp(),
+      // "Pending" means user hasn't paid yet
+      'status': 'Pending',
+    });
+
+    return appointmentRef.id;
   }
 
-  // ================== Submit Appointment ==================
-  Future<void> _submitAppointment() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select a date.")),
-      );
-      return;
-    }
+  // ================== PART B: Listen for Status == "Paid" ==================
+  void _listenForStatusChanges(String docId) {
+    _statusSubscription?.cancel();
+    _statusSubscription = FirebaseFirestore.instance
+        .collection('Hospital_Appointments')
+        .doc(docId)
+        .snapshots()
+        .listen((docSnapshot) {
+      if (!docSnapshot.exists) return;
+      final data = docSnapshot.data();
+      if (data == null) return;
 
-    final doctorName = _doctorsList
-        .firstWhere((doc) => doc['id'] == _selectedDoctorId)['name'];
+      final status = data['status'];
+      if (status == 'Paid') {
+        // Payment confirmed by webhook, cancel the timeout timer
+        _paymentTimer?.cancel();
+        _paymentTimer = null;
 
+        _statusSubscription?.cancel();
+        _statusSubscription = null;
+        // Signal the payment animation to complete.
+        _paymentSuccessNotifier.value = true;
+      }
+    });
+    // ADDED: Start a 2-minute timeout to check if payment is completed.
+    _startPaymentTimeout(docId);
+  }
+
+  // ================== ADDED: Start Payment Timeout ==================
+  void _startPaymentTimeout(String docId) {
+    _paymentTimer?.cancel();
+    _paymentTimer = Timer(Duration(minutes: 2), () async {
+      // After 2 minutes, check the doc's status.
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('Hospital_Appointments')
+          .doc(docId)
+          .get();
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data();
+        if (data != null && data['status'] == 'Pending') {
+          // Payment is still pending. Inform the user.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Payment incomplete, try again.")),
+          );
+          // Optionally, cancel the listener.
+          _statusSubscription?.cancel();
+          _statusSubscription = null;
+        }
+      }
+    });
+  }
+
+  // ================== PART C: Finalize Appointment Once Paid ==================
+  Future<void> _finalizeAppointment(String docId) async {
     try {
+      // 1. Get the doc
+      final bookingDoc = await FirebaseFirestore.instance
+          .collection('Hospital_Appointments')
+          .doc(docId)
+          .get();
+
+      if (!bookingDoc.exists) {
+        throw Exception("Booking not found");
+      }
+
+      final data = bookingDoc.data()!;
+      final phoneNumber = data['phoneNumber'] ?? "";
+      final doctorId    = data['doctorId'] as String?;
+      final dateString  = data['date'] as String?;
+
+      if (doctorId == null || dateString == null) {
+        throw Exception("Missing doctorId or dateString");
+      }
+
       final doctorRef = FirebaseFirestore.instance
           .collection('Doctors_LTA')
-          .doc(_selectedDoctorId);
+          .doc(doctorId);
 
-      final year  = _selectedDate!.year.toString().padLeft(4, '0');
-      final month = _selectedDate!.month.toString().padLeft(2, '0');
-      final day   = _selectedDate!.day.toString().padLeft(2, '0');
-      final dateKey = "${year}-${month}-${day}T00:00:00";
+      // 2. Increment the doctor's slot
+      final parsedDate = DateTime.parse(dateString);
+      final year  = parsedDate.year.toString().padLeft(4, '0');
+      final month = parsedDate.month.toString().padLeft(2, '0');
+      final day   = parsedDate.day.toString().padLeft(2, '0');
+      final dateKey = "$year-$month-${day}T00:00:00";
 
       int? finalBookedSlot;
 
@@ -554,7 +645,6 @@ class _BookingAppointmentState extends State<BookingAppointment> {
         }
 
         final docData = Map<String, dynamic>.from(freshSnap.data()!);
-
         if (!docData.containsKey(dateKey)) {
           throw Exception("Selected date is not available in doc.");
         }
@@ -576,78 +666,57 @@ class _BookingAppointmentState extends State<BookingAppointment> {
 
         final updatedBooked = bookedSlot + 1;
         dateMap['booked_slot'] = updatedBooked;
-
         finalBookedSlot = updatedBooked;
 
         docData[dateKey] = dateMap;
         transaction.update(doctorRef, docData);
-
-        final appointmentRef = FirebaseFirestore.instance
-            .collection('Hospital_Appointments')
-            .doc();
-
-        transaction.set(appointmentRef, {
-          'patientName': _nameController.text,
-          'phoneNumber': _phoneController.text,
-          'address': _addressController.text,
-          'hospitalId': widget.hospitalId,
-          'hospitalName': widget.hospitalName,
-          'department': _selectedDepartment,
-          'doctorId': _selectedDoctorId,
-          'date': _dateController.text,
-          'reason': _reasonController.text,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Appointment booked successfully!")),
-      );
-
-      // --- SMS Service Addition Start ---
-      String phoneNumber = _phoneController.text.trim();
-      if (!phoneNumber.startsWith("+91")) {
-        phoneNumber = "+91" + phoneNumber;
+      // 3. Send SMS with updated text and dynamic doctor name
+      String phone = phoneNumber;
+      if (!phone.startsWith("+91")) {
+        phone = "+91" + phone;
       }
       SmsService smsService = SmsService();
       await smsService.sendAppointmentConfirmation(
-        phoneNumber,
-        "Dear ${_nameController.text}, your appointment with Dr. $doctorName at ${widget.hospitalName} is confirmed for ${_dateController.text}. Your token no is ${finalBookedSlot ?? 0}. For any queries, contact us. Thank you!"
+        phone,
+        "Dear ${_nameController.text}, your appointment with Dr. ${_selectedDoctorName ?? 'Selected Doctor'} at ${widget.hospitalName} is confirmed for ${_dateController.text}. Your token no is ${finalBookedSlot ?? 0}. For any queries, contact us. Thank you!"
       );
-      // --- SMS Service Addition End ---
 
+      // 4. Generate PDF slip
       final pdfBytes = await _createPdfSlip(
         tokenNumber: finalBookedSlot ?? 0,
-        patientName: _nameController.text,
-        phoneNumber: _phoneController.text,
-        address: _addressController.text,
-        reason: _reasonController.text,
-        doctorName: doctorName,
-        hospitalName: widget.hospitalName,
-        dateString: _dateController.text,
+        patientName: data['patientName'] ?? "",
+        phoneNumber: phoneNumber,
+        address: data['address'] ?? "",
+        reason: data['reason'] ?? "",
+        doctorName: _selectedDoctorName ?? 'Selected Doctor',
+        hospitalName: data['hospitalName'] ?? "",
+        dateString: dateString,
       );
 
+      // 5. Show slip
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => TicketPreviewPage(
             pdfBytes: pdfBytes,
             tokenNumber: finalBookedSlot ?? 0,
-            patientName: _nameController.text,
-            phoneNumber: _phoneController.text,
-            address: _addressController.text,
-            reason: _reasonController.text,
-            doctorName: doctorName,
-            hospitalName: widget.hospitalName,
-            dateString: _dateController.text,
-            department: _selectedDepartment ?? "Not Specified",
+            patientName: data['patientName'] ?? "",
+            phoneNumber: phoneNumber,
+            address: data['address'] ?? "",
+            reason: data['reason'] ?? "",
+            doctorName: _selectedDoctorName ?? 'Selected Doctor',
+            hospitalName: data['hospitalName'] ?? "",
+            dateString: dateString,
+            department: data['department'] ?? "Not Specified",
           ),
         ),
       );
     } catch (e) {
-      debugPrint("Error saving appointment: $e");
+      debugPrint("Error finalizing appointment: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
+        SnackBar(content: Text("Error finalizing: $e")),
       );
     }
   }
@@ -675,7 +744,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                 child: pw.Text(
                   hospitalName,
                   style: pw.TextStyle(
-                    fontSize: 16, 
+                    fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -726,7 +795,73 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     return pdf.save();
   }
 
-  // ================== Helper: Build TextField ==================
+  // ================== "Book Now" => Validate & Show Payment Options ==================
+  void _onBookNowPressed() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a date.")),
+      );
+      return;
+    }
+
+    // Only show the payment options. Doc creation happens when "PAY NOW" is clicked.
+    _showCustomPaymentSheet();
+  }
+
+  // ================== ADDED: _payWithRazorpay Method with Payment Animation & Cancel ==================
+  Future<void> _payWithRazorpay() async {
+    try {
+      // Create the pending booking doc and start listening for status changes when "PAY NOW" is clicked.
+      final bookingId = await _createPendingBooking();
+      _currentBookingId = bookingId;
+      _listenForStatusChanges(bookingId);
+
+      // 1. Show Payment Animation Dialog with cancel option.
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return PaymentAnimationDialog(
+            paymentSuccessNotifier: _paymentSuccessNotifier,
+            onAnimationComplete: () {
+              Navigator.pop(context); // Close the animation dialog
+              // After animation completes, finalize appointment.
+              if (_currentBookingId != null) {
+                _finalizeAppointment(_currentBookingId!);
+              }
+            },
+            onCancel: () async {
+              // Delete the newly created doc from Firebase.
+              if (_currentBookingId != null) {
+                await FirebaseFirestore.instance
+                    .collection('Hospital_Appointments')
+                    .doc(_currentBookingId)
+                    .delete();
+                _currentBookingId = null;
+              }
+              Navigator.pop(context); // Close the animation dialog
+            },
+          );
+        },
+      );
+
+      // 2. Launch Razorpay Payment Link externally.
+      final url = "https://razorpay.me/@digikalady?amount=tEDHZxxCtz0rKFL9kTzhOw%3D%3D";
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        throw "Could not launch $url";
+      }
+    } catch (e) {
+      debugPrint("Payment error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Payment failed: $e")),
+      );
+    }
+  }
+
+  // ================== Build TextField Helper ==================
   Widget _buildTextField(
     String label,
     TextEditingController controller, {
@@ -753,6 +888,7 @@ class _BookingAppointmentState extends State<BookingAppointment> {
     );
   }
 
+  // ================== UI ==================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -817,31 +953,110 @@ class _BookingAppointmentState extends State<BookingAppointment> {
                   validator: (_) => null,
                 ),
                 const SizedBox(height: 16),
-                // Book Now button triggers the custom bottom sheet with payment options
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                      onPressed: () {
-                        NetworkUtils.checkAndProceed(context, () {
-                          if (_formKey.currentState!.validate()) {
-                            if (_selectedDate == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Please select a date.")),
-                              );
-                               return;
-                          }
-                          _showCustomPaymentSheet();
-                          }
-                      });
-                      },
-                      child: const Text("Book Now"),
-                    ),
+                    onPressed: _onBookNowPressed,
+                    child: const Text("Book Now"),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// ================== Payment Animation Dialog Widget ==================
+class PaymentAnimationDialog extends StatefulWidget {
+  final ValueNotifier<bool> paymentSuccessNotifier;
+  final VoidCallback onAnimationComplete;
+  final Future<void> Function()? onCancel;
+
+  const PaymentAnimationDialog({
+    Key? key,
+    required this.paymentSuccessNotifier,
+    required this.onAnimationComplete,
+    this.onCancel,
+  }) : super(key: key);
+
+  @override
+  _PaymentAnimationDialogState createState() => _PaymentAnimationDialogState();
+}
+
+class _PaymentAnimationDialogState extends State<PaymentAnimationDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _isLooping = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+
+    // Listen to payment success notifier.
+    widget.paymentSuccessNotifier.addListener(() {
+      if (widget.paymentSuccessNotifier.value && _isLooping) {
+        _isLooping = false;
+        _controller.stop();
+        _controller.animateTo(1.0).then((_) {
+          widget.onAnimationComplete();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Blurred background with 50% readability.
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+          child: Container(color: Colors.black.withOpacity(0)),
+        ),
+        Dialog(
+          backgroundColor: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lottie/loading_tick.json',
+                controller: _controller,
+                onLoaded: (composition) {
+                  _controller.duration = composition.duration;
+                  _controller.repeat(min: 0.1, max: 0.3);
+                },
+              ),
+              const SizedBox(height: 30), // Extra space to bring the cancel button further down
+              GestureDetector(
+                onTap: () async {
+                  if (widget.onCancel != null) {
+                    await widget.onCancel!();
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.black, size: 24),
+                ),
+              ),
+              const SizedBox(height: 10), // Additional bottom spacing
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

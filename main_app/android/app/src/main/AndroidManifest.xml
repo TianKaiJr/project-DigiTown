@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Location Permissions -->
+    <!-- Example Permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-    <!-- Internet Permissions for Payments -->
+    <!-- Internet Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -14,7 +14,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
-        
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -24,23 +24,35 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
-            
+
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
-            
+
+            <!-- LAUNCHER intent-filter -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            
-            <!-- Intent filter for deep linking -->
+
+            <!-- Existing deep link: myapp://bookingAppointment -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="myapp" android:host="bookingAppointment" />
             </intent-filter>
+
+            <!-- NEW custom deep link for UPI callback: myapp://bookingPaymentStatus -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="myapp"
+                    android:host="bookingPaymentStatus" />
+            </intent-filter>
+
         </activity>
 
         <!-- Required for Google Pay / Razorpay -->
@@ -54,11 +66,20 @@
             android:value="2" />
     </application>
 
-    <!-- Required for Text Processing in Flutter -->
+    <!-- Queries for UPI package visibility on Android 11+ -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
         </intent>
+
+        <!-- GPay -->
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+        <!-- PhonePe -->
+        <package android:name="com.phonepe.app" />
+        <!-- Paytm -->
+        <package android:name="net.one97.paytm" />
+        <!-- BHIM -->
+        <package android:name="in.org.npci.upiapp" />
     </queries>
 </manifest>

@@ -7,6 +7,7 @@ import 'E-panchayath/panchayat.dart';
 import 'palliative_care.dart';
 import 'transportation.dart';
 import 'blood.dart';
+import 'login.dart'; // Added import for LoginPage
 
 // -------------------------------------------------------------------
 // ContactUsPage: Only "Email Us" option + location & email details
@@ -266,8 +267,6 @@ class HomePage extends StatelessWidget {
 
   // Example method to handle "Logout"
   void handleLogout(BuildContext context) {
-    // TODO: Implement your logout logic
-    // For example, clear tokens, navigate to a login page, etc.
     // For demonstration, we just show a dialog:
     showDialog(
       context: context,
@@ -282,8 +281,10 @@ class HomePage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // close dialog
-              // For example, navigate to login screen:
-              // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginPage()));
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => LoginPage()),
+              );
             },
             child: const Text("Yes"),
           ),

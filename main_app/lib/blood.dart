@@ -1,384 +1,206 @@
 import 'package:flutter/material.dart';
-import 'NoInternetComponent/Utils/network_utils.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class BloodPage extends StatelessWidget {
+class BloodPage extends StatefulWidget {
   const BloodPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Blood Bank"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              "Welcome to the Blood Bank page.",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RegisterBloodDonation()),
-                );
-              },
-              child: const Text("Register to Donate Blood"),
-            ),
+  _BloodPageState createState() => _BloodPageState();
+}
 
-            const SizedBox(height: 20),
+class _BloodPageState extends State<BloodPage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  DateTime? _lastDonationDate;
+  String _selectedBloodType = 'A+';
+  List<String> bloodTypes = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RequestBlood()),
-                );
-              },
-              child: const Text("Request for Blood"),
-            ),
+  void _addDonor() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await _firestore.collection('Blood_Donor_Lists').add({
+          'name': _nameController.text,
+          'age': int.parse(_ageController.text),
+          'phone': _phoneController.text,
+          'blood_type': _selectedBloodType,
+          'last_donation_date': _lastDonationDate != null ? Timestamp.fromDate(_lastDonationDate!) : null,
+        });
 
-
-          ],
-        ),
-      ),
-    );
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Donor added successfully!')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add donor: $e')),
+        );
+      }
+    }
   }
-}
 
-class RegisterBloodDonation extends StatefulWidget {
-  const RegisterBloodDonation({super.key});
-
-  @override
-  _RegisterBloodDonationState createState() => _RegisterBloodDonationState();
-}
-
-class _RegisterBloodDonationState extends State<RegisterBloodDonation> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController ageController = TextEditingController();
-  final TextEditingController genderController = TextEditingController();
-  final TextEditingController bloodGroupController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
-  final TextEditingController medicalHistoryController = TextEditingController();
-
-  void _showConfirmationDialog() {
+  void _searchDonor() async {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Thank You for Registering to Donate Blood!"),
-        content: SingleChildScrollView(
-          child: ListBody(
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Search Donor by Blood Type'),
+          content: DropdownButtonFormField<String>(
+            value: _selectedBloodType,
+            items: bloodTypes.map((String bloodType) {
+              return DropdownMenuItem<String>(
+                value: bloodType,
+                child: Text(bloodType),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedBloodType = newValue!;
+              });
+            },
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Search'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showDonorList(_selectedBloodType);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDonorList(String bloodType) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: _firestore
+              .collection('Blood_Donor_Lists')
+              .where('blood_type', isEqualTo: bloodType)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            var donors = snapshot.data!.docs;
+            return ListView.builder(
+              itemCount: donors.length,
+              itemBuilder: (context, index) {
+                var donor = donors[index];
+                return ListTile(
+                  title: Text(donor['name']),
+                  subtitle: Text("Phone: ${donor['phone']}"),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.call, color: Colors.green),
+                    onPressed: () async {
+                      final Uri phoneUri = Uri(scheme: 'tel', path: donor['phone']);
+                      if (await canLaunchUrl(phoneUri)) {
+                        await launchUrl(phoneUri);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not launch phone call')),
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Add Blood Donor')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
             children: [
-              const Text("Please review the details you have provided:\n"),
-              Text("Name: ${nameController.text}"),
-              Text("Age: ${ageController.text}"),
-              Text("Gender: ${genderController.text}"),
-              Text("Blood Group: ${bloodGroupController.text}"),
-              Text("Contact Information: ${contactController.text}"),
-              Text("Medical History: ${medicalHistoryController.text.isNotEmpty ? medicalHistoryController.text : 'Not Provided'}"),
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+                validator: (value) => value!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _ageController,
+                decoration: const InputDecoration(labelText: 'Age'),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _phoneController,
+                decoration: const InputDecoration(labelText: 'Phone Number'),
+                keyboardType: TextInputType.phone,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: _selectedBloodType,
+                decoration: const InputDecoration(labelText: 'Blood Type'),
+                items: bloodTypes.map((String bloodType) {
+                  return DropdownMenuItem<String>(
+                    value: bloodType,
+                    child: Text(bloodType),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedBloodType = newValue!;
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null) {
+                    setState(() {
+                      _lastDonationDate = pickedDate;
+                    });
+                  }
+                },
+                child: Text(_lastDonationDate == null
+                    ? 'Select Last Donation Date'
+                    : _lastDonationDate!.toLocal().toString().split(' ')[0]),
+              ),
               const SizedBox(height: 20),
-              const Text("By clicking Agree, you confirm the following:\n"),
-              const Text("- I am voluntarily registering to donate blood without any coercion or monetary compensation."),
-              const Text("- I have provided accurate and truthful information about my health and medical history."),
-              const Text("- I understand the process of blood donation, its potential risks, and benefits."),
-              const Text("- I consent to my blood being tested for infectious diseases (e.g., HIV, Hepatitis B & C, syphilis, malaria) and understand that the results will remain confidential."),
-              const Text("- I am aware that I can withdraw my consent at any time before the donation process begins."),
-              const Text("- I understand that my donated blood will be used for life-saving purposes in compliance with applicable laws and guidelines."),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _addDonor,
+                    child: const Text('Add Donor'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _searchDonor,
+                    child: const Text('Search Donors'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("You have declined to register.")),
-              );
-            },
-            child: const Text("Decline"),
-          ),
-          TextButton(
-            onPressed: () {
-              NetworkUtils.checkAndProceed(context, () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Thank you for registering to donate blood!")),
-                );
-              // Add logic for final submission to backend or database here
-              });
-            },
-            child: const Text("Agree"),
-          ),
-
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Register to Donate Blood"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            const Text(
-              "Fill in your details to register:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Full Name",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: ageController,
-              decoration: const InputDecoration(
-                labelText: "Age",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: genderController,
-              decoration: const InputDecoration(
-                labelText: "Gender",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: bloodGroupController,
-              decoration: const InputDecoration(
-                labelText: "Blood Group",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: contactController,
-              decoration: const InputDecoration(
-                labelText: "Contact Number",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: medicalHistoryController,
-              decoration: const InputDecoration(
-                labelText: "Medical History (if any)",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                NetworkUtils.checkAndProceed(context, _showConfirmationDialog);
-              },
-              child: const Text("Submit"),
-            ),
-
-          ],
-        ),
       ),
     );
   }
 }
-
-class RequestBlood extends StatefulWidget {
-  const RequestBlood({super.key});
-
-  @override
-  _RequestBloodState createState() => _RequestBloodState();
-}
-
-class _RequestBloodState extends State<RequestBlood> {
-  final _nameController = TextEditingController();
-  final _bloodGroupController = TextEditingController();
-  final _urgencyController = TextEditingController();
-  final _contactController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _donorList = [
-    {'name': 'John Doe', 'bloodGroup': 'A+', 'phone': '+1234567890', 'location': 'Location 1'},
-    {'name': 'Jane Smith', 'bloodGroup': 'B+', 'phone': '+19876543210', 'location': 'Location 2'},
-    {'name': 'Mike Johnson', 'bloodGroup': 'O-', 'phone': '+15551234567', 'location': 'Location 3'},
-    {'name': 'Emily Davis', 'bloodGroup': 'AB+', 'phone': '+14447891234', 'location': 'Location 4'},
-  ];
-
-  List<Map<String, String>> _matchedDonors = [];
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _bloodGroupController.dispose();
-    _urgencyController.dispose();
-    _contactController.dispose();
-    _addressController.dispose();
-    super.dispose();
-  }
-
-  // Blood compatibility mapping
-  final Map<String, List<String>> compatibility = {
-    'A+': ['A+', 'AB+'],
-    'A-': ['A+', 'A-', 'AB+', 'AB-'],
-    'B+': ['B+', 'AB+'],
-    'B-': ['B+', 'B-', 'AB+', 'AB-'],
-    'O+': ['O+', 'A+', 'B+', 'AB+'],
-    'O-': ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'],
-    'AB+': ['AB+'],
-    'AB-': ['AB+', 'AB-'],
-  };
-
-  // Function to check blood compatibility
-  List<Map<String, String>> _findMatchingDonors(String bloodGroup) {
-    List<Map<String, String>> matchedDonors = [];
-    for (var donor in _donorList) {
-      if (compatibility[bloodGroup]?.contains(donor['bloodGroup']) ?? false) {
-        matchedDonors.add(donor);
-      }
-    }
-    return matchedDonors;
-  }
-
-  // Simulate search logic based on blood group and location
-  void _searchDonors() {
-    setState(() {
-      _matchedDonors = _findMatchingDonors(_bloodGroupController.text);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Request for Blood"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            // Name input
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: "Name",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Blood group input
-            TextField(
-              controller: _bloodGroupController,
-              decoration: const InputDecoration(
-                labelText: "Blood Group Required",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Urgency input
-            TextField(
-              controller: _urgencyController,
-              decoration: const InputDecoration(
-                labelText: "Urgency (e.g., Immediate, Within a Day)",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Contact input
-            TextField(
-              controller: _contactController,
-              decoration: const InputDecoration(
-                labelText: "Contact Number",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Address input
-            TextField(
-              controller: _addressController,
-              decoration: const InputDecoration(
-                labelText: "Address",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Search button
-            ElevatedButton(
-              onPressed: () {
-                NetworkUtils.checkAndProceed(context, _searchDonors);
-              },
-              child: const Text("Search Donors"),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Display matched donors
-            if (_matchedDonors.isNotEmpty)
-              ..._matchedDonors.map((donor) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16.0),
-                  child: ListTile(
-                    title: Text(donor['name']!),
-                    subtitle: Text("Blood Group: ${donor['bloodGroup']}\nLocation: ${donor['location']}"),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.call),
-                          onPressed: () {
-                            // Handle call action
-                            _makeCall(donor['phone']!);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.message),
-                          onPressed: () {
-                            // Handle message action
-                            _sendMessage(donor['phone']!);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              })
-            else
-              const Text('No matching donors found.'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Placeholder function for making a call
-  void _makeCall(String phoneNumber) {
-    print("Calling $phoneNumber...");
-  }
-
-  // Placeholder function for sending a message
-  void _sendMessage(String phoneNumber) {
-    print("Sending message to $phoneNumber...");
-  }
-}
-
-

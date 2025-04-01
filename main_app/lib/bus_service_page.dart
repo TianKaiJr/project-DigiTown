@@ -244,7 +244,6 @@ class _BusSearchPageState extends State<BusServicePage> {
             bool passesTimeCheck = true;
             if (_useCustomDate) {
               // If user chose a custom date, we skip the "past time" filter
-              // (We assume your Firestore data doesn't store a bus date, so we can't truly compare dates.)
               passesTimeCheck = true;
             } else if (_isToday) {
               // "Today" => only show buses that depart after current time
@@ -449,12 +448,11 @@ class _BusSearchPageState extends State<BusServicePage> {
                           TextButton(
                             onPressed: () {
                               NetworkUtils.checkAndProceed(context, () {
-                                 _chooseTodayOrTomorrow(true);
+                                _chooseTodayOrTomorrow(true);
                               });
                             },
                             child: const Text("Today"),
                           ),
-
                           TextButton(
                             onPressed: () {
                               NetworkUtils.checkAndProceed(context, () {
@@ -508,6 +506,9 @@ class _BusSearchPageState extends State<BusServicePage> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
+                        // 1) Dismiss keyboard immediately
+                        FocusScope.of(context).unfocus();
+                        // 2) Then proceed with your search
                         NetworkUtils.checkAndProceed(context, searchBuses);
                       },
                       style: ElevatedButton.styleFrom(
@@ -516,16 +517,27 @@ class _BusSearchPageState extends State<BusServicePage> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                     child: const Text(
-                      "SEARCH BUSES",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                      child: const Text(
+                        "SEARCH BUSES",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  )
                   ),
                   const SizedBox(height: 16),
+
+                  // <-- Show the loading animation BELOW the Search Button
+                  if (isLoading)
+                    Center(
+                      child: Lottie.asset(
+                        'assets/lottie/bus.json',
+                        width: 150,
+                        height: 150,
+                        repeat: true,
+                      ),
+                    ),
 
                   // Results
                   Builder(
@@ -597,22 +609,7 @@ class _BusSearchPageState extends State<BusServicePage> {
               ),
             ),
           ),
-
-          // Loading overlay with bus animation
-          if (isLoading)
-            Container(
-              color: Colors.white54,
-              child: Center(
-                // Lottie bus animation (make sure you have bus.json in assets)
-                child: Lottie.asset(
-                  'assets/lottie/bus.json',
-                  width: 150,
-                  height: 150,
-                  repeat: true,
-                ),
-                // or fallback: CircularProgressIndicator()
-              ),
-            ),
+          // (Removed the full-screen loading overlay)
         ],
       ),
     );
