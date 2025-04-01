@@ -10,9 +10,8 @@ import 'package:pdf/widgets.dart' as pw;
 // We'll navigate to TicketPreviewPage
 import 'ticket_preview.dart';  // <-- Import the second file
 import 'smsservice.dart';
-// ================== ADDED: URL Launcher for Razorpay Link ==================
 import 'package:url_launcher/url_launcher.dart';
-// ================== ADDED: Lottie for Animation ==================
+
 import 'package:lottie/lottie.dart';
 
 class BookingAppointment extends StatefulWidget {

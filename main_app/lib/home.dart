@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';  // For launching email
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:main_app/profile_page.dart';
 import 'hospital.dart';
 import 'E-panchayath/panchayat.dart';
 import 'palliative_care.dart';
 import 'transportation.dart';
 import 'blood.dart';
-import 'login.dart'; // Added import for LoginPage
+import 'login.dart';
 
 // -------------------------------------------------------------------
 // ContactUsPage: Only "Email Us" option + location & email details
@@ -20,11 +22,6 @@ class ContactUsPage extends StatelessWidget {
     final Uri emailUri = Uri(
       scheme: 'mailto',
       path: 'digitown.app@gmail.com',
-      // If you want subject/body, you can add:
-      // queryParameters: {
-      //   'subject': 'Hello',
-      //   'body': 'Type your message here',
-      // },
     );
 
     if (await canLaunchUrl(emailUri)) {
@@ -44,7 +41,6 @@ class ContactUsPage extends StatelessWidget {
       ),
       body: Container(
         padding: const EdgeInsets.all(16.0),
-        // Light green background (similar to your design)
         decoration: const BoxDecoration(
           color: Color(0xFFDFFAE5),
         ),
@@ -69,10 +65,6 @@ class ContactUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
-            // ---------------------
-            // Email + Location info
-            // ---------------------
             const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -103,8 +95,6 @@ class ContactUsPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 40),
-
-            // Only "Email Us" option
             GestureDetector(
               onTap: _launchEmail,
               child: Container(
@@ -169,13 +159,12 @@ class MyDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        // Optional gradient background or color
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF81CDC8), // teal-ish
+              Color(0xFF81CDC8),
               Color(0xFFACECEB),
             ],
           ),
@@ -184,7 +173,6 @@ class MyDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             const SizedBox(height: 60),
-            // Example of a custom "profile" icon at the top
             const Center(
               child: CircleAvatar(
                 radius: 40,
@@ -197,31 +185,27 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Home
             ListTile(
               leading: const Icon(Icons.home, color: Colors.black),
               title: const Text('Home'),
               onTap: () {
-                Navigator.pop(context); // close the drawer
+                Navigator.pop(context);
                 onHomeTap();
               },
             ),
-            // Person (Profile)
             ListTile(
               leading: const Icon(Icons.person, color: Colors.black),
               title: const Text('Person'),
               onTap: () {
-                Navigator.pop(context); // close the drawer
+                Navigator.pop(context);
                 onProfileTap();
               },
             ),
-            // Contact Us (above Logout)
             ListTile(
               leading: const Icon(Icons.email, color: Colors.black),
               title: const Text('Contact Us'),
               onTap: () {
-                Navigator.pop(context); // close the drawer
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -230,12 +214,11 @@ class MyDrawer extends StatelessWidget {
                 );
               },
             ),
-            // Logout
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text('Logout'),
               onTap: () {
-                Navigator.pop(context); // close the drawer
+                Navigator.pop(context);
                 onLogoutTap();
               },
             ),
@@ -247,12 +230,11 @@ class MyDrawer extends StatelessWidget {
 }
 
 // -------------------------------------------------------------------
-// HomePage: Uses the MyDrawer above, which has Contact Us
+// HomePage: Uses the MyDrawer and provides options for navigation
 // -------------------------------------------------------------------
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  // Example method to handle "Profile" tap
   void goToProfilePage(BuildContext context) {
     Navigator.push(
       context,
@@ -260,14 +242,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Example method to handle "Home" tap (just pops back if there's a route stack)
   void goToHomePage(BuildContext context) {
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
-  // Example method to handle "Logout"
+  // Updated logout function: sign out from Firebase and clear persistent flag
   void handleLogout(BuildContext context) {
-    // For demonstration, we just show a dialog:
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -275,12 +255,21 @@ class HomePage extends StatelessWidget {
         content: const Text("Are you sure you want to logout?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // close dialog
+            onPressed: () => Navigator.pop(context),
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // close dialog
+            onPressed: () async {
+              // Sign out from Firebase
+              await FirebaseAuth.instance.signOut();
+
+              // Clear persistent login flag if you are using shared_preferences
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.remove('isLoggedIn');
+
+              Navigator.pop(context); // Close the dialog
+
+              // Navigate to the LoginPage replacing the current route
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => LoginPage()),
@@ -293,7 +282,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Show an exit confirmation if the user tries to go back from Home
+  // Confirm exit dialog when the user attempts to exit the app
   Future<bool> _showExitConfirmationDialog(BuildContext context) async {
     bool? shouldExit = await showDialog(
       context: context,
@@ -314,9 +303,8 @@ class HomePage extends StatelessWidget {
     );
 
     if (shouldExit == true) {
-      SystemNavigator.pop(); // Closes the app
+      SystemNavigator.pop();
     }
-
     return false;
   }
 
@@ -331,13 +319,10 @@ class HomePage extends StatelessWidget {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
-              if (await _showExitConfirmationDialog(context)) {
-                // If user confirms exit, do something if needed
-              }
+              await _showExitConfirmationDialog(context);
             },
           ),
         ),
-        // We use an endDrawer to show the hamburger icon on the right side
         endDrawer: MyDrawer(
           onProfileTap: () => goToProfilePage(context),
           onHomeTap: () => goToHomePage(context),
