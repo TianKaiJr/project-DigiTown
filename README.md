@@ -114,4 +114,4 @@ Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
 ## 📩 Contact  
 
-For queries, reach out at: **your-email@example.com**  
+For queries, reach out at: **digitown.app@gmail.com**  
