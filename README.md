@@ -8,6 +8,16 @@
 
 **A comprehensive digital solution integrating multiple essential services into one platform.**  
 
+## 📸 Screenshots  
+
+| Application | Screenshot |
+|-------------|------------|
+| **Main App** | ![Main App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/main_app.png) |
+| **Admin Panel** | ![Admin Panel](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/admin_panel.png) |
+| **Taxi App** | ![Taxi App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/taxi_app.png) |
+
+---
+
 ## 📌 Modules  
 
 DigiTown consists of **5 key modules**, each serving a crucial purpose:  
