@@ -8,16 +8,6 @@
 
 **A comprehensive digital solution integrating multiple essential services into one platform.**  
 
-## 📸 Screenshots  
-
-| Application  | Screenshot  |
-|-------------|------------|
-| **Main App** | ![Main App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/main_app.png) |
-| **Admin Panel** | ![Admin Panel 1](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/login.png) <br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/da.png) <br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/appoints.png) <br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/routes.png)<br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/updates.png) |
-| **Taxi App** | ![Taxi App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/taxi_app.png) |
-
----
-
 ## 📌 Modules  
 
 DigiTown consists of **5 key modules**, each serving a crucial purpose:  
@@ -45,6 +35,18 @@ DigiTown consists of **5 key modules**, each serving a crucial purpose:
 - 🚌 **Bus Timings & Route Checker** – Check bus schedules based on routes.  
 
 ---
+
+## 📸 Screenshots  
+
+| Application  | Screenshot  |
+|-------------|------------|
+| **Main App** | ![Main App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/main_app.png) |
+| **Admin Panel** | ![Admin Panel 1](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/login.png) <br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/da.png) <br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/appoints.png) <br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/routes.png)<br> ![Admin Panel 2](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/updates.png) |
+| **Taxi App** | ![Taxi App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/taxi_app.png) |
+
+---
+
+
 
 ## 📂 Project Structure  
 
