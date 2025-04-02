@@ -1,9 +1,7 @@
-# 🏙️ DigiTown
-
 <p align="center">
   <img src="https://github.com/TianKaiJr/project-DigiTown/blob/main/super_admin_panel/assets/images/logo.png" alt="DigiTown Logo" width="200">
 </p>
-
+# 🚀 DigiTown
 
 **A comprehensive digital solution integrating multiple essential services into one platform.**  
 
