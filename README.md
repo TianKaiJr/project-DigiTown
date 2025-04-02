@@ -13,7 +13,7 @@
 | Application | Screenshot |
 |-------------|------------|
 | **Main App** | ![Main App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/main_app.png) |
-| **Admin Panel** | ![Admin Panel](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/admin_panel.png) |
+| **Admin Panel** | ![Admin Panel](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/Screenshot (8).png) |
 | **Taxi App** | ![Taxi App](https://github.com/TianKaiJr/project-DigiTown/blob/main/screenshots/taxi_app.png) |
 
 ---
