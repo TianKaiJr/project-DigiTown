@@ -87,7 +87,15 @@ THE SOFTWARE.
 1. **Clone the repository:**  
    ```bash
    git clone https://github.com/TianKaiJr/project-DigiTown.git
-   cd digitown
+   cd digitown/main_app
+   ```
+   ```bash
+   git clone https://github.com/TianKaiJr/project-DigiTown.git
+   cd digitown/super_admin_panel
+   ```
+   ```bash
+   git clone https://github.com/TianKaiJr/project-DigiTown.git
+   cd digitown/taxi_app
    ```
 
 2. **Install dependencies:**  
