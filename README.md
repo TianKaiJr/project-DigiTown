@@ -120,7 +120,7 @@ Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
 ---
 
-##☕ Support My Work
+## ☕ Support My Work
 
 If you love DigiTown and want to support further development, consider buying me a coffee! Your support helps in maintaining and improving this project. 💙
 
