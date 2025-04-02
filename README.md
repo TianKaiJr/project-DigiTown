@@ -86,7 +86,7 @@ THE SOFTWARE.
 ### 📥 Installation  
 1. **Clone the repository:**  
    ```bash
-   git clone https://github.com/your-username/digitown.git
+   git clone [https://github.com/your-username/digitown.git](https://github.com/TianKaiJr/project-DigiTown.git)
    cd digitown
    ```
 
