@@ -1,7 +1,9 @@
 <p align="center">
   <img src="https://github.com/TianKaiJr/project-DigiTown/blob/main/super_admin_panel/assets/images/logo.png" alt="DigiTown Logo" width="200">
 </p>
+
 ---
+
 # 🚀 DigiTown
 
 **A comprehensive digital solution integrating multiple essential services into one platform.**  
@@ -124,7 +126,7 @@ Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
 ---
 
-## ☕ Support My Work
+## ☕ Support My Work  
 
 If you love DigiTown and want to support further development, consider buying me a coffee! Your support helps in maintaining and improving this project. 💙
 
@@ -132,4 +134,5 @@ If you love DigiTown and want to support further development, consider buying me
 
 ## 📩 Contact  
 
-For queries, reach out at: **digitown.app@gmail.com**  
+For queries, reach out at: **digitown.app@gmail.com**
+
