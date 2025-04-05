@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart'; // for current user email
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'NoInternetComponent/Utils/network_utils.dart';
 
@@ -19,6 +19,41 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
   bool _hasSearched = false;
   bool _showBookNow = true;
 
+  Map<String, String> _driverRequestStatus = {}; // driverId -> 'pending'
+  Map<String, String> _requestDocumentIds = {}; // driverId -> Firestore docId
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingRequests(); // Check Firestore for existing requests
+  }
+
+  Future<void> _loadExistingRequests() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    String userEmail = user?.email ?? '';
+
+    QuerySnapshot driversSnapshot =
+        await FirebaseFirestore.instance.collection('Driver_Users').get();
+
+    for (var driverDoc in driversSnapshot.docs) {
+      final driverId = driverDoc.id;
+      QuerySnapshot requests = await FirebaseFirestore.instance
+          .collection('Driver_Users')
+          .doc(driverId)
+          .collection('Ride_Requests')
+          .where('user_email', isEqualTo: userEmail)
+          .where('completion_status', isEqualTo: false)
+          .get();
+
+      if (requests.docs.isNotEmpty) {
+        _driverRequestStatus[driverId] = 'pending';
+        _requestDocumentIds[driverId] = requests.docs.first.id;
+      }
+    }
+
+    setState(() {}); // Refresh UI after loading
+  }
+
   Future<void> _getUserLocation() async {
     bool hasPermission = await _checkLocationPermission();
     if (!hasPermission) return;
@@ -29,9 +64,6 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
       _userPosition = position;
       _showBookNow = false;
     });
-
-    print('User Location: Lat: ${position.latitude.toStringAsFixed(7)}, '
-        'Lng: ${position.longitude.toStringAsFixed(7)}, Accuracy: ${position.accuracy}m');
 
     _findNearestAvailableDrivers();
   }
@@ -49,8 +81,12 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
     for (var doc in querySnapshot.docs) {
       double driverLat = doc['latitude'];
       double driverLng = doc['longitude'];
-      double distance = Geolocator.distanceBetween(_userPosition!.latitude,
-          _userPosition!.longitude, driverLat, driverLng);
+      double distance = Geolocator.distanceBetween(
+        _userPosition!.latitude,
+        _userPosition!.longitude,
+        driverLat,
+        driverLng,
+      );
 
       drivers.add({
         'id': doc.id,
@@ -71,10 +107,7 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
   }
 
   void _bookDriver(Map<String, dynamic> driver) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: driver['phone'],
-    );
+    final Uri launchUri = Uri(scheme: 'tel', path: driver['phone']);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
@@ -84,7 +117,7 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
     }
   }
 
-  void _sendLocationToDriver(Map<String, dynamic> driver) async {
+  Future<void> _sendLocationToDriver(Map<String, dynamic> driver) async {
     if (_userPosition == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("User location not available")),
@@ -103,13 +136,11 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
             "Are you sure you want to send your location to this driver?"),
         actions: [
           TextButton(
-            child: const Text("Cancel"),
-            onPressed: () => Navigator.pop(context, false),
-          ),
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.pop(context, false)),
           ElevatedButton(
-            child: const Text("Send"),
-            onPressed: () => Navigator.pop(context, true),
-          ),
+              child: const Text("Send"),
+              onPressed: () => Navigator.pop(context, true)),
         ],
       ),
     );
@@ -117,7 +148,7 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
     if (!confirm) return;
 
     try {
-      await FirebaseFirestore.instance
+      DocumentReference ref = await FirebaseFirestore.instance
           .collection('Driver_Users')
           .doc(driver['id'])
           .collection('Ride_Requests')
@@ -126,7 +157,13 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
         'user_longitude': _userPosition!.longitude,
         'user_email': userEmail,
         'job_status': 'Pending',
+        'completion_status': false,
         'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      setState(() {
+        _driverRequestStatus[driver['id']] = 'pending';
+        _requestDocumentIds[driver['id']] = ref.id;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,6 +175,71 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
         const SnackBar(content: Text("Failed to send location")),
       );
     }
+  }
+
+  void _discardRequest(String driverId) async {
+    String? docId = _requestDocumentIds[driverId];
+    if (docId != null) {
+      await FirebaseFirestore.instance
+          .collection('Driver_Users')
+          .doc(driverId)
+          .collection('Ride_Requests')
+          .doc(docId)
+          .delete();
+
+      setState(() {
+        _driverRequestStatus.remove(driverId);
+        _requestDocumentIds.remove(driverId);
+      });
+    }
+  }
+
+  void _markAsDone(String driverId) async {
+    String? docId = _requestDocumentIds[driverId];
+    if (docId != null) {
+      await FirebaseFirestore.instance
+          .collection('Driver_Users')
+          .doc(driverId)
+          .collection('Ride_Requests')
+          .doc(docId)
+          .update({'completion_status': true});
+
+      setState(() {
+        _driverRequestStatus.remove(driverId);
+        _requestDocumentIds.remove(driverId);
+      });
+    }
+  }
+
+  Future<bool> _checkLocationPermission() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled.')),
+      );
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied.')),
+        );
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Location permissions are permanently denied.')),
+      );
+      return false;
+    }
+
+    return true;
   }
 
   @override
@@ -174,6 +276,9 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
                   itemCount: _availableDrivers.length,
                   itemBuilder: (context, index) {
                     final driver = _availableDrivers[index];
+                    final driverId = driver['id'];
+                    final requestStatus = _driverRequestStatus[driverId];
+
                     return Card(
                       child: ListTile(
                         title: Text(driver['name']),
@@ -191,17 +296,46 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
                               },
                               child: const Text('Call Now'),
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                            if (requestStatus == 'pending') ...[
+                              ElevatedButton(
+                                onPressed: null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey,
+                                ),
+                                child: const Text('Sent'),
                               ),
-                              onPressed: () {
-                                NetworkUtils.checkAndProceed(context, () {
-                                  _sendLocationToDriver(driver);
-                                });
-                              },
-                              child: const Text('Send Location'),
-                            ),
+                              PopupMenuButton<String>(
+                                onSelected: (value) {
+                                  if (value == 'discard') {
+                                    _discardRequest(driverId);
+                                  } else if (value == 'done') {
+                                    _markAsDone(driverId);
+                                  }
+                                },
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'discard',
+                                    child: Text('Discard'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'done',
+                                    child: Text('Mark as Done'),
+                                  ),
+                                ],
+                                child: const Icon(Icons.more_vert),
+                              ),
+                            ] else
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
+                                onPressed: () {
+                                  NetworkUtils.checkAndProceed(context, () {
+                                    _sendLocationToDriver(driver);
+                                  });
+                                },
+                                child: const Text('Send Location'),
+                              ),
                           ],
                         ),
                       ),
@@ -213,36 +347,5 @@ class _TaxiServicePageState extends State<TaxiServicePage> {
         ),
       ),
     );
-  }
-
-  Future<bool> _checkLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location services are disabled.')),
-      );
-      return false;
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permissions are denied.')),
-        );
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Location permissions are permanently denied.')),
-      );
-      return false;
-    }
-
-    return true;
   }
 }
