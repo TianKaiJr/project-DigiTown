@@ -3,6 +3,17 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  app_links
+  charset_converter
+  cloud_firestore
+  connectivity_plus
+  file_selector_windows
+  firebase_auth
+  firebase_core
+  firebase_storage
+  geolocator_windows
+  printing
+  url_launcher_windows
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
