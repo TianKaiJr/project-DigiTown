@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 
 class PalliativeAppointmentsScreen extends StatefulWidget {
   const PalliativeAppointmentsScreen({super.key});
@@ -45,6 +46,7 @@ class _PalliativeAppointmentsScreenState
           children: snapshot.data!.docs.map((doc) {
             var data = doc.data() as Map<String, dynamic>;
             return Card(
+              color: AppPallete.cardColor,
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: ListTile(
                 title: Text("${data['name']} - ${data['service']}",

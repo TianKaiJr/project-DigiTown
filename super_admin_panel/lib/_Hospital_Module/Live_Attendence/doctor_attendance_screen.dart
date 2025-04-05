@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'doctor_attendance_view_model.dart';
 
 class DoctorAttendanceScreen extends StatelessWidget {
@@ -22,6 +23,7 @@ class DoctorAttendanceScreen extends StatelessWidget {
               final doctor = viewModel.doctors[index];
 
               return Card(
+                color: AppPallete.cardColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),

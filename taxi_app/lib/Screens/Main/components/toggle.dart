@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
 class ToggleButton extends StatefulWidget {
-  final String userId; // User's Firestore document ID
+  final String userId;
 
   const ToggleButton({super.key, required this.userId});
 
@@ -13,35 +13,44 @@ class ToggleButton extends StatefulWidget {
   _ToggleButtonState createState() => _ToggleButtonState();
 }
 
-class _ToggleButtonState extends State<ToggleButton> {
-  final _controller = ValueNotifier<bool>(false);
+class _ToggleButtonState extends State<ToggleButton>
+    with WidgetsBindingObserver {
+  bool isOn = false;
   Timer? _locationTimer;
 
   @override
   void initState() {
     super.initState();
-
-    _controller.addListener(() async {
-      if (_controller.value) {
-        print('Toggle is: ON');
-        await _updateAvailability(true);
-        await _startLocationUpdates();
-      } else {
-        print('Toggle is: OFF');
-        await _updateAvailability(false);
-        _stopLocationUpdates();
-      }
-    });
+    WidgetsBinding.instance.addObserver(this);
+    _loadToggleState();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-    _locationTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _stopLocationUpdates(); // Stop updates when widget is disposed
     super.dispose();
   }
 
-  // Function to update the 'available' field in Firestore
+  // Load toggle state from SharedPreferences
+  Future<void> _loadToggleState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isOn = prefs.getBool('isOn') ?? false;
+    });
+
+    if (isOn) {
+      _startLocationUpdates();
+    }
+  }
+
+  // Save toggle state to SharedPreferences
+  Future<void> _saveToggleState(bool state) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isOn', state);
+  }
+
+  // Update Firestore availability
   Future<void> _updateAvailability(bool isAvailable) async {
     try {
       await FirebaseFirestore.instance
@@ -53,7 +62,7 @@ class _ToggleButtonState extends State<ToggleButton> {
     }
   }
 
-  // Function to handle location permissions
+  // Handle location permissions
   Future<bool> _checkLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -72,7 +81,7 @@ class _ToggleButtonState extends State<ToggleButton> {
     return true;
   }
 
-  // Function to fetch the current location and store it in Firestore
+  // Fetch and update location in Firestore
   Future<void> _fetchLocation() async {
     try {
       bool permissionGranted = await _checkLocationPermission();
@@ -85,13 +94,13 @@ class _ToggleButtonState extends State<ToggleButton> {
           'longitude': 76.386865,
           'timestamp': FieldValue.serverTimestamp(),
         });
+        return;
       }
 
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       print('Location: Lat: ${position.latitude}, Long: ${position.longitude}');
 
-      // Store location in Firestore under "Driver_Users" collection
       await FirebaseFirestore.instance
           .collection('Driver_Users')
           .doc(widget.userId)
@@ -105,37 +114,97 @@ class _ToggleButtonState extends State<ToggleButton> {
     }
   }
 
-  // Function to start periodic location updates
+  // Start periodic location updates
   Future<void> _startLocationUpdates() async {
-    await _fetchLocation(); // Fetch location immediately
+    if (_locationTimer != null && _locationTimer!.isActive) return;
+
+    await _fetchLocation();
     _locationTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
+      if (!isOn) {
+        _stopLocationUpdates();
+        return;
+      }
       await _fetchLocation();
     });
   }
 
-  // Function to stop periodic location updates
+  // Stop location updates
   void _stopLocationUpdates() {
     _locationTimer?.cancel();
     _locationTimer = null;
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.paused) {
+      if (isOn) {
+        setState(() {
+          isOn = false;
+        });
+        _updateAvailability(false);
+        _stopLocationUpdates();
+        _saveToggleState(false);
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return AdvancedSwitch(
-      controller: _controller,
-      activeColor: Colors.green,
-      inactiveColor: Colors.red,
-      activeChild: Text(
-        'ON',
-        style: TextStyle(color: Colors.white, fontSize: 20),
+    return GPSButton(
+      isOn: isOn,
+      onTap: () async {
+        setState(() {
+          isOn = !isOn;
+        });
+
+        if (isOn) {
+          print('Toggle is: ON');
+          await _updateAvailability(true);
+          await _saveToggleState(true);
+          await _startLocationUpdates();
+        } else {
+          print('Toggle is: OFF');
+          await _updateAvailability(false);
+          _stopLocationUpdates();
+          await _saveToggleState(false);
+        }
+      },
+    );
+  }
+}
+
+class GPSButton extends StatelessWidget {
+  final bool isOn;
+  final VoidCallback onTap;
+
+  const GPSButton({super.key, required this.isOn, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isOn ? Colors.green : Colors.red,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withOpacity(0.2),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.power_settings_new,
+          color: Colors.white,
+          size: 40,
+        ),
       ),
-      inactiveChild: Text(
-        'OFF',
-        style: TextStyle(color: Colors.white, fontSize: 20),
-      ),
-      borderRadius: BorderRadius.circular(20),
-      width: 120,
-      height: 60,
     );
   }
 }

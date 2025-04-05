@@ -1,6 +1,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -21,11 +22,11 @@ class _AdminManagerScreenState extends State<AdminManagerScreen> {
   bool _status = false;
 
   Future<void> _addAdmin() async {
-    const String firebaseApiKey = "YOUR_FIREBASE_API_KEY";
+    final apiKey = dotenv.env['FIREBASEAPI_KEY'];
 
     try {
       String url =
-          "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$firebaseApiKey";
+          "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$apiKey";
 
       var response = await http.post(
         Uri.parse(url),
@@ -48,6 +49,7 @@ class _AdminManagerScreenState extends State<AdminManagerScreen> {
             .set({
           "email": _emailController.text.trim(),
           "name": _nameController.text.trim(),
+          "password": _passwordController.text.trim(),
           "role": _roleController.text.trim(),
           "status": _status,
           "timestamp": Timestamp.now(),

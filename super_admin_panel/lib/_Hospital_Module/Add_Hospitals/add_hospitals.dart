@@ -14,6 +14,7 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   List<String> _selectedDepartments = [];
   List<Map<String, dynamic>> _departments = [];
   bool _isLoading = true; // Track loading state
@@ -117,6 +118,14 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                TextField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(
+                    labelText: 'Phone',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 const Text('Select Departments:'),
                 _isLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -163,6 +172,7 @@ class _AddHospitalsScreenState extends State<AddHospitalsScreen> {
         'Name': _nameController.text,
         'Address': _nameController.text,
         'Departments': _selectedDepartments,
+        'phone': _phoneController.text
       });
 
       Navigator.pop(context);

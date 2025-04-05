@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
 
@@ -12,7 +11,13 @@ class ComplaintListPage extends StatefulWidget {
 }
 
 class _ComplaintListPageState extends State<ComplaintListPage> {
-  bool enable_WriteMode = true;
+  bool enable_WriteMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndUpdateComplaints();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +43,11 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
               String currentStatus = complaint['status'] ?? 'Under Review';
 
               return Card(
-                color: AppPallete.secondaryColor,
+                color: AppPallete.cardColor,
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 child: ListTile(
                   title: Text(complaint['subject'] ?? 'No Subject'),
-                  subtitle: Text('Type: ${complaint['type']}'),
+                  subtitle: Text('Type: ${complaint['issueType']}'),
                   onTap: () => _showEditDialog(context, complaint),
                   isThreeLine: true,
                   trailing: Row(
@@ -52,7 +57,7 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _deleteComplaint(complaint.id),
                       ),
-                      const SizedBox(width: 10), // Add spacing between buttons
+                      const SizedBox(width: 10),
                       DropdownButton<String>(
                         value: currentStatus,
                         items: ['Under Review', 'Accepted', 'Rejected']
@@ -77,8 +82,7 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
         },
       ),
       floatingActionButton: Visibility(
-        visible:
-            enable_WriteMode, // Set this to true to make the button visible
+        visible: enable_WriteMode,
         child: FloatingActionButton(
           onPressed: () => _showCreateComplaintDialog(context),
           child: const Icon(Icons.add),
@@ -92,6 +96,13 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
         .collection('Complaint_MGR')
         .doc(docId)
         .delete();
+  }
+
+  Future<void> _updateComplaintStatus(String docId, String status) async {
+    await FirebaseFirestore.instance
+        .collection('Complaint_MGR')
+        .doc(docId)
+        .update({'status': status});
   }
 
   void _showEditDialog(BuildContext context, DocumentSnapshot complaint) {
@@ -111,25 +122,20 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // Rounded corners
+            borderRadius: BorderRadius.circular(12),
           ),
           child: SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.75, // Set height to 75% of screen height
+            height: MediaQuery.of(context).size.height * 0.75,
             child: Column(
               children: [
-                // Title
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     enable_WriteMode ? 'Edit Complaint' : 'View Complaint',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge, // Use a theme for consistency
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 ),
-                const Divider(), // Optional divider between title and content
-                // Content
+                const Divider(),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(8.0),
@@ -162,8 +168,7 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
                           decoration:
                               const InputDecoration(labelText: 'Subject'),
                         ),
-                        const SizedBox(
-                            height: 10), // Use SizedBox instead of Gap
+                        const SizedBox(height: 10),
                         TextField(
                           readOnly: !enable_WriteMode,
                           controller: detailController,
@@ -176,36 +181,6 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
                     ),
                   ),
                 ),
-                // Actions (Only if enabled)
-                if (enable_WriteMode)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            await FirebaseFirestore.instance
-                                .collection('Complaint_MGR')
-                                .doc(complaint.id)
-                                .update({
-                              'subject': subjectController.text,
-                              'details': detailController.text,
-                              'username': usernameController.text,
-                              'email': emailController.text,
-                              'contact': contactController.text,
-                            });
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Update'),
-                        ),
-                      ],
-                    ),
-                  ),
               ],
             ),
           ),
@@ -214,120 +189,36 @@ class _ComplaintListPageState extends State<ComplaintListPage> {
     );
   }
 
-  void _showCreateComplaintDialog(BuildContext context) async {
-    TextEditingController subjectController = TextEditingController();
-    TextEditingController detailController = TextEditingController();
-    TextEditingController usernameController = TextEditingController();
-    TextEditingController emailController = TextEditingController();
-    TextEditingController contactController = TextEditingController();
-    String complaintType = 'Public';
-    int complaintId = await _getNextComplaintId();
+  Future<void> _checkAndUpdateComplaints() async {
+    final collection = FirebaseFirestore.instance.collection('Complaint_MGR');
+    final snapshot = await collection.get();
 
+    for (var doc in snapshot.docs) {
+      if (!doc.exists || doc.data().containsKey('c_id')) continue;
+
+      String email = doc['email'] ?? '';
+      String username = doc['username'] ?? '';
+      String cId = '$email$username';
+
+      await collection.doc(doc.id).update({'c_id': cId});
+    }
+  }
+
+  void _showCreateComplaintDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('New Complaint'),
-          content: SingleChildScrollView(
-            // Use SingleChildScrollView to avoid overflow
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: subjectController,
-                  decoration: const InputDecoration(labelText: 'Subject'),
-                ),
-                const Gap(5),
-                TextField(
-                  controller: detailController,
-                  decoration: const InputDecoration(labelText: 'Details'),
-                  maxLines: 4,
-                ),
-                const Gap(5),
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(labelText: 'Username'),
-                ),
-                const Gap(5),
-                TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email ID'),
-                ),
-                const Gap(5),
-                TextField(
-                  controller: contactController,
-                  decoration:
-                      const InputDecoration(labelText: 'Contact Number'),
-                ),
-                const Gap(5),
-                DropdownButtonFormField(
-                  value: complaintType,
-                  items: ['Public', 'Private'].map((String type) {
-                    return DropdownMenuItem(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      complaintType = value!;
-                    });
-                  },
-                  decoration: const InputDecoration(labelText: 'Type of Issue'),
-                ),
-              ],
-            ),
-          ),
+          title: const Text('Create Complaint'),
+          content: const Text('Complaint creation functionality goes here.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('Complaint_MGR')
-                    .add({
-                  'complaint_id': complaintId,
-                  'subject': subjectController.text,
-                  'details': detailController.text,
-                  'type': complaintType,
-                  'username': usernameController.text,
-                  'email': emailController.text,
-                  'contact': contactController.text,
-                  'status': 'Under Review', // Default status
-                });
-                await _updateComplaintId(complaintId);
-                Navigator.pop(context);
-              },
-              child: const Text('Submit'),
+              child: const Text('Close'),
             ),
           ],
         );
       },
     );
-  }
-
-  Future<int> _getNextComplaintId() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('ID_Counters')
-        .doc('permanent_counters_skeleton')
-        .get();
-    int currentId = snapshot['complaint_id'];
-    return currentId + 1;
-  }
-
-  Future<void> _updateComplaintId(int newId) async {
-    await FirebaseFirestore.instance
-        .collection('ID_Counters')
-        .doc('permanent_counters_skeleton')
-        .update({'complaint_id': newId});
-  }
-
-  Future<void> _updateComplaintStatus(String docId, String status) async {
-    await FirebaseFirestore.instance
-        .collection('Complaint_MGR')
-        .doc(docId)
-        .update({'status': status});
   }
 }

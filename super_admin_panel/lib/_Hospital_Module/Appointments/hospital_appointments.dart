@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:super_admin_panel/_Panchayat_Module/widgets/custom_appbar.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 
 class AppointmentListPage extends StatefulWidget {
   const AppointmentListPage({super.key});
@@ -112,6 +113,7 @@ class _AppointmentListPageState extends State<AppointmentListPage>
             List<String> statusOptions = ['Pending', 'Confirmed', 'Cancelled'];
 
             return Card(
+              color: AppPallete.cardColor,
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: ListTile(
                 title: Text(data['patientName'] ?? 'No Name'),

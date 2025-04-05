@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:super_admin_panel/__MainScreen/view_models/main_screen_view_model.dart';
-import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 import 'package:super_admin_panel/__MainScreen/views/side_menu.dart';
+import 'package:super_admin_panel/___Core/Theme/app_pallete.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<MainScreenViewModel>();
+
     return Scaffold(
-      key: context.read<MainScreenViewModel>().scaffoldKey,
+      key: viewModel.scaffoldKey,
       drawer: const SideMenu(),
       body: SafeArea(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Expanded(
-              child: SideMenu(),
-            ),
+            const Expanded(child: SideMenu()),
             Expanded(
               flex: 5,
               child: Container(
@@ -36,9 +41,7 @@ class MainScreen extends StatelessWidget {
                   ],
                 ),
                 child: ValueListenableBuilder<Widget>(
-                  valueListenable: context
-                      .watch<MainScreenViewModel>()
-                      .currentScreenNotifier,
+                  valueListenable: viewModel.currentScreenNotifier,
                   builder: (context, screen, child) {
                     return screen;
                   },

@@ -6,5 +6,6 @@ class AppPallete {
   static const bgColor = Color(0xFF212332);
   static const errorColor = Colors.red;
 
+  static const cardColor = Color.fromARGB(62, 0, 225, 255);
   static const defaultPadding = 16.0;
 }
